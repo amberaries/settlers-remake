@@ -83,7 +83,7 @@ public interface IGraphicsGrid {
 	 *            y coordinate
 	 * @param debugColorMode
 	 *            {@link EDebugColorModes} enum that defines what should be printed.
-	 * @return debug color to be drawn at the given position (in 16bit rgba format) or -1 if no color should be drawn.
+	 * @return debug color to be drawn at the given position (in 16bit rgba format) or 0 if no color should be drawn.
 	 */
 	int getDebugColorAt(int x, int y, EDebugColorModes debugColorMode);
 
