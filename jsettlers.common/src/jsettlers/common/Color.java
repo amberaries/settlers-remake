@@ -52,14 +52,12 @@ public final class Color {
 		this.shortColor = toShortColorForced(1);
 	}
 
-	public Color toGreyScale()
-	{
+	public Color toGreyScale() {
 		float intensity = 0.2126f * red + 0.7152f * green + 0.0722f * blue;
 		return new Color(intensity, intensity, intensity, alpha);
 	}
 
-	public Color overlay(Color colour)
-	{
+	public Color overlay(Color colour) {
 		return new Color(red * colour.getRed(), green * colour.getGreen(), blue * colour.getBlue(), alpha * colour.getAlpha());
 	}
 
@@ -87,8 +85,7 @@ public final class Color {
 		return (argb & 0xff00ff00) | ((argb & 0xff) << 16) | ((argb >> 16) & 0xff);
 	}
 
-	public static final int getARGB(float red, float green, float blue,
-			float alpha) {
+	public static final int getARGB(float red, float green, float blue, float alpha) {
 		return ((int) (alpha * 255) & 0xff) << 24
 				| ((int) (red * 255) & 0xff) << 16
 				| ((int) (green * 255) & 0xff) << 8
@@ -156,4 +153,7 @@ public final class Color {
 				s & 1);
 	}
 
+	public Color colorWithAlpha(float alpha) {
+		return new Color(red, green, blue, alpha);
+	}
 }
