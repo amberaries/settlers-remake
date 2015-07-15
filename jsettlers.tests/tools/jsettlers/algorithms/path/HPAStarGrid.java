@@ -14,28 +14,31 @@ import jsettlers.common.mapobject.IMapObject;
 import jsettlers.common.movable.IMovable;
 
 public class HPAStarGrid {
+	private final short width;
+	private final short height;
+	private final boolean[][] blocked;
+	private final int[][] debugColors;
 
-	private static final int WIDTH = 60;
-	private static final int HEIGHT = 60;
+	public HPAStarGrid(final int width, final int height, float blockedPercentage) {
+		this.width = (short) width;
+		this.height = (short) height;
+		blocked = new boolean[width][height];
+		debugColors = new int[width][height];
 
-	private final boolean[][] blocked = new boolean[WIDTH][HEIGHT];
-	private final int[][] debugColors = new int[WIDTH][HEIGHT];
-
-	public HPAStarGrid() {
 		Random r = new Random(1234);
-		for (int i = 0; i < WIDTH * HEIGHT / 2; i++) {
-			int x = r.nextInt(WIDTH);
-			int y = r.nextInt(HEIGHT);
+		for (int i = 0; i < width * height * blockedPercentage; i++) {
+			int x = r.nextInt(width);
+			int y = r.nextInt(height);
 			blocked[x][y] = true;
 		}
 	}
 
 	public int getWidth() {
-		return WIDTH;
+		return width;
 	}
 
 	public int getHeight() {
-		return HEIGHT;
+		return height;
 	}
 
 	float getCost(IPathCalculatable requester, int sx, int sy, int tx, int ty) {
@@ -55,8 +58,8 @@ public class HPAStarGrid {
 	}
 
 	public void clearDebugColors() {
-		for (int x = 0; x < WIDTH; x++) {
-			for (int y = 0; y < HEIGHT; y++) {
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
 				debugColors[x][y] = 0;
 			}
 		}
@@ -116,7 +119,7 @@ public class HPAStarGrid {
 
 			@Override
 			public short getWidth() {
-				return WIDTH;
+				return width;
 			}
 
 			@Override
@@ -156,7 +159,7 @@ public class HPAStarGrid {
 
 			@Override
 			public short getHeight() {
-				return HEIGHT;
+				return height;
 			}
 
 			@Override

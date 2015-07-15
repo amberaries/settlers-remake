@@ -13,11 +13,8 @@ import jsettlers.graphics.map.MapInterfaceConnector;
 public class HPAStarTesterWnd {
 
 	public static void main(String args[]) {
-		final HPAStarGrid grid = new HPAStarGrid();
+		final HPAStarGrid grid = new HPAStarGrid(120, 120, 1f / 3);
 		MapInterfaceConnector connector = TestUtils.openTestWindow(grid.getGraphicsGrid());
-
-		HPAStar hpaStar = new HPAStar(grid);
-		hpaStar.calculateTransitions(10);
 
 		connector.scrollTo(new ShortPoint2D(25, 25), false);
 		connector.fireAction(new Action(EActionType.TOGGLE_DEBUG));
@@ -51,5 +48,8 @@ public class HPAStarTesterWnd {
 				}
 			}
 		});
+
+		HPAStar hpaStar = new HPAStar(grid);
+		hpaStar.calculateTransitions(10);
 	}
 }
