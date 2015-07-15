@@ -15,8 +15,8 @@ import jsettlers.common.movable.IMovable;
 
 public class HPAStarGrid {
 
-	static final int WIDTH = 60;
-	static final int HEIGHT = 60;
+	private static final int WIDTH = 60;
+	private static final int HEIGHT = 60;
 
 	private final boolean[][] blocked = new boolean[WIDTH][HEIGHT];
 	private final int[][] debugColors = new int[WIDTH][HEIGHT];
@@ -28,6 +28,14 @@ public class HPAStarGrid {
 			int y = r.nextInt(HEIGHT);
 			blocked[x][y] = true;
 		}
+	}
+
+	public int getWidth() {
+		return WIDTH;
+	}
+
+	public int getHeight() {
+		return HEIGHT;
 	}
 
 	float getCost(IPathCalculatable requester, int sx, int sy, int tx, int ty) {
