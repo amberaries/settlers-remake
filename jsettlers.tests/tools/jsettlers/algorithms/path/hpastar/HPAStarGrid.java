@@ -1,7 +1,8 @@
-package jsettlers.algorithms.path;
+package jsettlers.algorithms.path.hpastar;
 
 import java.util.Random;
 
+import jsettlers.algorithms.path.IPathCalculatable;
 import jsettlers.algorithms.path.astar.IAStarPathMap;
 import jsettlers.common.Color;
 import jsettlers.common.CommonConstants;
@@ -12,6 +13,8 @@ import jsettlers.common.map.IGraphicsGrid;
 import jsettlers.common.map.partition.IPartitionData;
 import jsettlers.common.mapobject.IMapObject;
 import jsettlers.common.movable.IMovable;
+import jsettlers.logic.map.grid.MainGridDataAccessor;
+import jsettlers.logic.map.grid.flags.FlagsGrid;
 
 public class HPAStarGrid {
 	private final short width;
@@ -19,17 +22,32 @@ public class HPAStarGrid {
 	private final boolean[][] blocked;
 	private final int[][] debugColors;
 
-	public HPAStarGrid(final int width, final int height, float blockedPercentage) {
+	public HPAStarGrid(int width, int height) {
 		this.width = (short) width;
 		this.height = (short) height;
 		blocked = new boolean[width][height];
 		debugColors = new int[width][height];
+	}
+
+	public HPAStarGrid(final int width, final int height, float blockedPercentage) {
+		this(width, height);
 
 		Random r = new Random(1234);
 		for (int i = 0; i < width * height * blockedPercentage; i++) {
 			int x = r.nextInt(width);
 			int y = r.nextInt(height);
 			blocked[x][y] = true;
+		}
+	}
+
+	public HPAStarGrid(MainGridDataAccessor grid) {
+		this(grid.getWidth(), grid.getHeight());
+
+		FlagsGrid flagsGrid = grid.getFlagsGrid();
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				blocked[x][y] = flagsGrid.isBlocked(x, y);
+			}
 		}
 	}
 
