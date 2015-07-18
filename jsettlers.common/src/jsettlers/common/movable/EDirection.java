@@ -35,6 +35,21 @@ public enum EDirection {
 	public static final EDirection[] values = EDirection.values();
 	public static final byte NUMBER_OF_DIRECTIONS = (byte) values.length;
 
+	public static final byte[] DIRECTION_DELTAS_X;
+	public static final byte[] DIRECTION_DELTAS_Y;
+
+	static {
+		DIRECTION_DELTAS_X = new byte[NUMBER_OF_DIRECTIONS];
+		for (int i = 0; i < NUMBER_OF_DIRECTIONS; i++) {
+			DIRECTION_DELTAS_X[i] = EDirection.values[i].gridDeltaX;
+		}
+
+		DIRECTION_DELTAS_Y = new byte[NUMBER_OF_DIRECTIONS];
+		for (int i = 0; i < NUMBER_OF_DIRECTIONS; i++) {
+			DIRECTION_DELTAS_Y[i] = EDirection.values[i].gridDeltaY;
+		}
+	}
+
 	public final byte gridDeltaX;
 	public final byte gridDeltaY;
 
@@ -230,22 +245,6 @@ public enum EDirection {
 
 	public EDirection getInverseDirection() {
 		return values()[(this.ordinal() + NUMBER_OF_DIRECTIONS / 2) % NUMBER_OF_DIRECTIONS];
-	}
-
-	public static byte[] getXDeltaArray() {
-		byte[] result = new byte[NUMBER_OF_DIRECTIONS];
-		for (int i = 0; i < NUMBER_OF_DIRECTIONS; i++) {
-			result[i] = EDirection.values[i].gridDeltaX;
-		}
-		return result;
-	}
-
-	public static byte[] getYDeltaArray() {
-		byte[] result = new byte[NUMBER_OF_DIRECTIONS];
-		for (int i = 0; i < NUMBER_OF_DIRECTIONS; i++) {
-			result[i] = EDirection.values[i].gridDeltaY;
-		}
-		return result;
 	}
 
 	public final boolean isHorizontal() {

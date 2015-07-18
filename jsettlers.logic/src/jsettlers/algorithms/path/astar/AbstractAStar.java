@@ -14,12 +14,11 @@
  *******************************************************************************/
 package jsettlers.algorithms.path.astar;
 
-import jsettlers.algorithms.path.IPathCalculatable;
 import jsettlers.algorithms.path.Path;
 import jsettlers.common.position.ShortPoint2D;
 
-public abstract class AbstractAStar {
-	public abstract Path findPath(IPathCalculatable requester, final short sx, final short sy, final short tx, final short ty);
+public abstract class AbstractAStar<T> {
+	public abstract Path findPath(T requester, ShortPoint2D start, ShortPoint2D target);
 
-	public abstract Path findPath(IPathCalculatable aStarPathable, ShortPoint2D targetPos);
+	public abstract Path findPath(T requester, final short sx, final short sy, final short tx, final short ty);
 }

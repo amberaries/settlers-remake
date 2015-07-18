@@ -21,14 +21,6 @@ public class HPAStar {
 	}
 
 	public void calculateTransitions(int cellSize) {
-
-		// for (int y = cellSize; y < height; y += cellSize) {
-		// for (int x = 0; x < width; x++) {
-		// grid.setDebugColor(x, y, Color.WHITE);
-		// grid.setDebugColor(x, y - 1, Color.WHITE);
-		// }
-		// }
-
 		HashMap<ShortPoint2D, Transition> transitions = new HashMap<>();
 
 		xCalculateTransitions(cellSize, transitions);

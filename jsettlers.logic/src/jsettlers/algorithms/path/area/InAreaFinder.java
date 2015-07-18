@@ -14,7 +14,6 @@
  *******************************************************************************/
 package jsettlers.algorithms.path.area;
 
-import jsettlers.algorithms.path.IPathCalculatable;
 import jsettlers.common.material.ESearchType;
 import jsettlers.common.position.ShortPoint2D;
 import jsettlers.network.synchronic.random.RandomSingleton;
@@ -27,12 +26,12 @@ import jsettlers.network.synchronic.random.RandomSingleton;
  * @author Andreas Eberle
  * 
  */
-public final class InAreaFinder {
-	private final IInAreaFinderMap map;
+public final class InAreaFinder<T> {
+	private final IInAreaFinderMap<T> map;
 	private final short width;
 	private final short height;
 
-	public InAreaFinder(IInAreaFinderMap map, short width, short height) {
+	public InAreaFinder(IInAreaFinderMap<T> map, short width, short height) {
 		this.map = map;
 		this.width = width;
 		this.height = height;
@@ -48,7 +47,7 @@ public final class InAreaFinder {
 	 * @return an SPoint2D object if the searched thing has been found<br>
 	 *         null if it hasn't been found.
 	 */
-	public final ShortPoint2D find(IPathCalculatable requester, short centerX, short centerY, short searchRadius, ESearchType searched) {
+	public final ShortPoint2D find(T requester, short centerX, short centerY, short searchRadius, ESearchType searched) {
 
 		for (int i = 0; i < 100; i++) {
 			double angle = RandomSingleton.nextD() * 2 * Math.PI; // get an angle in the interval [0, 2PI]

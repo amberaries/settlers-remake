@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import jsettlers.algorithms.fogofwar.IViewDistancable;
-import jsettlers.algorithms.path.IPathCalculatable;
 import jsettlers.algorithms.path.Path;
 import jsettlers.common.mapobject.EMapObjectType;
 import jsettlers.common.material.EMaterialType;
@@ -33,9 +32,10 @@ import jsettlers.common.position.ShortPoint2D;
 import jsettlers.common.selectable.ESelectionType;
 import jsettlers.graphics.messages.SimpleMessage;
 import jsettlers.input.IGuiMovable;
-import jsettlers.logic.buildings.military.IOccupyableBuilding;
+import jsettlers.logic.buildings.military.occupying.IOccupyableBuilding;
 import jsettlers.logic.constants.Constants;
 import jsettlers.logic.constants.MatchConstants;
+import jsettlers.logic.map.grid.IPathRequirements;
 import jsettlers.logic.movable.interfaces.AbstractMovableGrid;
 import jsettlers.logic.movable.interfaces.AbstractStrategyGrid;
 import jsettlers.logic.movable.interfaces.IAttackable;
@@ -55,7 +55,7 @@ import jsettlers.network.synchronic.random.RandomSingleton;
  * @author Andreas Eberle
  * 
  */
-public final class Movable implements IScheduledTimerable, IPathCalculatable, IIDable, IDebugable, Serializable, IViewDistancable, IGuiMovable,
+public final class Movable implements IScheduledTimerable, IPathRequirements, IIDable, IDebugable, Serializable, IViewDistancable, IGuiMovable,
 		IAttackableMovable {
 	private static final long serialVersionUID = 2472076796407425256L;
 	private static final HashMap<Integer, Movable> movablesByID = new HashMap<Integer, Movable>();
@@ -281,7 +281,7 @@ public final class Movable implements IScheduledTimerable, IPathCalculatable, II
 
 		if (grid.hasNoMovableAt(path.nextX(), path.nextY())) { // if we can go on to the next step
 			if (!grid.isValidNextPathPosition(this, path.getNextPos(), path.getTargetPos())) { // next position is invalid
-				Path newPath = grid.calculatePathTo(this, path.getTargetPos()); // try to find a new path
+				Path newPath = grid.calculatePathTo(this, position, path.getTargetPos()); // try to find a new path
 				if (newPath == null) { // no path found
 					setState(EMovableState.DOING_NOTHING);
 					movableAction = EAction.NO_ACTION;
@@ -320,7 +320,7 @@ public final class Movable implements IScheduledTimerable, IPathCalculatable, II
 
 	private int doingNothingAction() {
 		if (grid.isBlockedOrProtected(position.x, position.y)) {
-			Path newPath = grid.searchDijkstra(this, position.x, position.y, (short) 50, ESearchType.NON_BLOCKED_OR_PROTECTED);
+			Path newPath = grid.searchDijkstra(this, position, position.x, position.y, (short) 50, ESearchType.NON_BLOCKED_OR_PROTECTED);
 			if (newPath == null) {
 				kill();
 				return -1;
@@ -553,7 +553,7 @@ public final class Movable implements IScheduledTimerable, IPathCalculatable, II
 	final boolean goToPos(ShortPoint2D targetPos) {
 		assert state == EMovableState.DOING_NOTHING : "can't do goToPos() if state isn't DOING_NOTHING. curr state: " + state;
 
-		Path path = grid.calculatePathTo(this, targetPos);
+		Path path = grid.calculatePathTo(this, position, targetPos);
 		if (path == null) {
 			return false;
 		} else {
@@ -638,9 +638,9 @@ public final class Movable implements IScheduledTimerable, IPathCalculatable, II
 		assert state == EMovableState.DOING_NOTHING : "this method can only be invoked in state DOING_NOTHING";
 
 		if (dikjstra) {
-			this.path = grid.searchDijkstra(this, centerX, centerY, radius, searchType);
+			this.path = grid.searchDijkstra(this, position, centerX, centerY, radius, searchType);
 		} else {
-			this.path = grid.searchInArea(this, centerX, centerY, radius, searchType);
+			this.path = grid.searchInArea(this, position, centerX, centerY, radius, searchType);
 		}
 
 		return path != null;
@@ -848,6 +848,7 @@ public final class Movable implements IScheduledTimerable, IPathCalculatable, II
 	}
 
 	public final boolean setOccupyableBuilding(IOccupyableBuilding building) {
+		// FIXME @Andreas Eberle: this method must also calculate the path to see if its valid
 		if (canOccupyBuilding()) {
 			return ((SoldierStrategy) strategy).setOccupyableBuilding(building);
 		} else {

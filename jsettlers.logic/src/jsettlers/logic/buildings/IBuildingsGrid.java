@@ -14,16 +14,17 @@
  *******************************************************************************/
 package jsettlers.logic.buildings;
 
-import jsettlers.algorithms.path.dijkstra.DijkstraAlgorithm;
 import jsettlers.common.landscape.ELandscapeType;
 import jsettlers.common.map.shapes.FreeMapArea;
 import jsettlers.common.map.shapes.MapCircle;
 import jsettlers.common.material.EMaterialType;
+import jsettlers.common.material.ESearchType;
 import jsettlers.common.movable.EDirection;
 import jsettlers.common.movable.EMovableType;
 import jsettlers.common.position.RelativePoint;
 import jsettlers.common.position.ShortPoint2D;
 import jsettlers.logic.buildings.workers.WorkerBuilding;
+import jsettlers.logic.map.grid.IPathRequirements;
 import jsettlers.logic.map.grid.objects.MapObjectsManager;
 import jsettlers.logic.map.grid.partition.manager.manageables.interfaces.IBarrack;
 import jsettlers.logic.map.grid.partition.manager.manageables.interfaces.IDiggerRequester;
@@ -96,11 +97,6 @@ public interface IBuildingsGrid {
 	void pushMaterialsTo(ShortPoint2D position, EMaterialType type, byte numberOf);
 
 	/**
-	 * @return dijkstra algorithm to be used by buildings.
-	 */
-	DijkstraAlgorithm getDijkstra();
-
-	/**
 	 * Occupies the given area for the given player.
 	 * 
 	 * @param player
@@ -145,5 +141,9 @@ public interface IBuildingsGrid {
 	 *            if false, it is removed.
 	 */
 	void drawWorkAreaCircle(ShortPoint2D buildingPosition, ShortPoint2D workAreaCenter, short radius, boolean draw);
+
+	boolean fitsSearchType(short x, short y, ESearchType searchType, IPathRequirements pathRequirements);
+
+	boolean isInBounds(short x, short y);
 
 }

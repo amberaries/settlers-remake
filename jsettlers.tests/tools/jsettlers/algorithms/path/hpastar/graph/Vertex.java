@@ -17,5 +17,4 @@ public class Vertex extends ShortPoint2D {
 		this.neighbors = neighbors;
 		this.distances = distances;
 	}
-
 }

@@ -14,9 +14,8 @@
  *******************************************************************************/
 package jsettlers.algorithms.path.astar;
 
-import jsettlers.algorithms.path.IPathCalculatable;
-import jsettlers.algorithms.path.astar.IAStarPathMap;
 import jsettlers.common.Color;
+import jsettlers.logic.map.grid.IPathRequirements;
 
 /**
  * Dummy map for testing purposes of AStar.
@@ -24,7 +23,7 @@ import jsettlers.common.Color;
  * @author Andreas Eberle
  * 
  */
-public class DummyEmptyAStarMap implements IAStarPathMap {
+public class DummyEmptyAStarMap implements IAStarPathMap<IPathRequirements> {
 
 	private final boolean[][] blocked;
 
@@ -33,7 +32,7 @@ public class DummyEmptyAStarMap implements IAStarPathMap {
 	}
 
 	@Override
-	public boolean isBlocked(IPathCalculatable requester, int x, int y) {
+	public boolean isBlocked(IPathRequirements requirements, int x, int y) {
 		return blocked[x][y];
 	}
 

@@ -30,7 +30,6 @@ import jsettlers.algorithms.fogofwar.IFogOfWarGrid;
 import jsettlers.algorithms.fogofwar.IViewDistancable;
 import jsettlers.algorithms.landmarks.EnclosedBlockedAreaFinderAlgorithm;
 import jsettlers.algorithms.landmarks.IEnclosedBlockedAreaFinderGrid;
-import jsettlers.algorithms.path.IPathCalculatable;
 import jsettlers.algorithms.path.Path;
 import jsettlers.algorithms.path.area.IInAreaFinderMap;
 import jsettlers.algorithms.path.area.InAreaFinder;
@@ -77,7 +76,7 @@ import jsettlers.input.IGuiInputGrid;
 import jsettlers.input.PlayerState;
 import jsettlers.logic.buildings.Building;
 import jsettlers.logic.buildings.IBuildingsGrid;
-import jsettlers.logic.buildings.military.IOccupyableBuilding;
+import jsettlers.logic.buildings.military.occupying.IOccupyableBuilding;
 import jsettlers.logic.buildings.workers.WorkerBuilding;
 import jsettlers.logic.constants.Constants;
 import jsettlers.logic.constants.MatchConstants;
@@ -275,7 +274,7 @@ public final class MainGrid implements Serializable {
 			BuildingObject buildingObject = (BuildingObject) object;
 			Building building = constructBuildingAt(pos, buildingObject.getType(), partitionsGrid.getPlayer(buildingObject.getPlayerId()), true);
 
-			if (building instanceof IOccupyableBuilding) {
+			if (building != null && building instanceof IOccupyableBuilding) {
 				Movable soldier = createNewMovableAt(building.getDoor(), EMovableType.SWORDSMAN_L1, building.getPlayer());
 				soldier.setOccupyableBuilding((IOccupyableBuilding) building);
 			}
@@ -315,7 +314,7 @@ public final class MainGrid implements Serializable {
 	 * 
 	 * @return
 	 */
-	public IAStarPathMap getPathfinderGrid() {
+	public IAStarPathMap<IPathRequirements> getPathfinderGrid() {
 		return movablePathfinderGrid.pathfinderGrid;
 	}
 
@@ -343,16 +342,19 @@ public final class MainGrid implements Serializable {
 	 */
 	final Building constructBuildingAt(ShortPoint2D position, EBuildingType type, Player player, boolean fullyConstructed) {
 		Building building = Building.getBuilding(type, player);
-		building.constructAt(buildingsGrid, position, fullyConstructed);
+		boolean buildingConstructed = building.constructAt(buildingsGrid, position, fullyConstructed);
 
-		if (fullyConstructed) {
-			byte buildingHeight = landscapeGrid.getHeightAt(position.x, position.y);
-			for (RelativePoint curr : building.getFlattenTiles()) {
-				landscapeGrid.flattenAndChangeHeightTowards(curr.getDx() + position.x, curr.getDy() + position.y, buildingHeight);
+		if (buildingConstructed) {
+			if (fullyConstructed) {
+				byte buildingHeight = landscapeGrid.getHeightAt(position.x, position.y);
+				for (RelativePoint curr : building.getFlattenTiles()) {
+					landscapeGrid.flattenAndChangeHeightTowards(curr.getDx() + position.x, curr.getDy() + position.y, buildingHeight);
+				}
 			}
+			return building;
+		} else {
+			return null;
 		}
-
-		return building;
 	}
 
 	protected final void setLandscapeTypeAt(int x, int y, ELandscapeType newType) {
@@ -379,16 +381,17 @@ public final class MainGrid implements Serializable {
 		}
 	}
 
-	final boolean isValidPosition(IPathCalculatable pathCalculatable, int x, int y) {
+	final boolean isValidPosition(IPathRequirements pathRequirements, int x, int y) {
 		return isInBounds(x, y) && !flagsGrid.isBlocked(x, y)
-				&& (!pathCalculatable.needsPlayersGround() || pathCalculatable.getPlayerId() == partitionsGrid.getPlayerIdAt(x, y));
+				&& (!pathRequirements.needsPlayersGround() || pathRequirements.getPlayerId() == partitionsGrid.getPlayerIdAt(x, y));
 	}
 
-	final class PathfinderGrid implements IAStarPathMap, IDijkstraPathMap, IInAreaFinderMap, Serializable {
+	final class PathfinderGrid implements IAStarPathMap<IPathRequirements>, IDijkstraPathMap<IPathRequirements>, IInAreaFinderMap<IPathRequirements>,
+			Serializable {
 		private static final long serialVersionUID = -2775530442375843213L;
 
 		@Override
-		public boolean isBlocked(IPathCalculatable requester, int x, int y) {
+		public boolean isBlocked(IPathRequirements requester, int x, int y) {
 			return flagsGrid.isBlocked(x, y) || (requester.needsPlayersGround() && requester.getPlayerId() != partitionsGrid.getPlayerIdAt(x, y));
 		}
 
@@ -414,64 +417,65 @@ public final class MainGrid implements Serializable {
 		}
 
 		@Override
-		public final boolean fitsSearchType(int x, int y, ESearchType searchType, IPathCalculatable pathCalculable) {
+		public final boolean fitsSearchType(int x, int y, ESearchType searchType, IPathRequirements pathRequirements) {
 			switch (searchType) {
 
 			case UNENFORCED_FOREIGN_GROUND:
-				return !flagsGrid.isBlocked(x, y) && !hasSamePlayer(x, y, pathCalculable) && !partitionsGrid.isEnforcedByTower(x, y);
+				return !flagsGrid.isBlocked(x, y) && !hasSamePlayer(x, y, pathRequirements) && !partitionsGrid.isEnforcedByTower(x, y);
 
 			case VALID_FREE_POSITION:
-				return isValidPosition(pathCalculable, x, y) && movableGrid.hasNoMovableAt(x, y);
+				return isValidPosition(pathRequirements, x, y) && movableGrid.hasNoMovableAt(x, y);
 
 			case PLANTABLE_TREE:
 				return y < height - 1 && isTreePlantable(x, y + 1) && !hasProtectedNeighbor(x, y + 1)
-						&& hasSamePlayer(x, y + 1, pathCalculable) && !isMarked(x, y);
+						&& hasSamePlayer(x, y + 1, pathRequirements) && !isMarked(x, y);
 			case CUTTABLE_TREE:
 				return isInBounds(x - 1, y - 1)
 						&& isMapObjectCuttable(x - 1, y - 1, EMapObjectType.TREE_ADULT)
-						&& hasSamePlayer(x - 1, y - 1, pathCalculable) && !isMarked(x, y);
+						&& hasSamePlayer(x - 1, y - 1, pathRequirements) && !isMarked(x, y);
 
 			case PLANTABLE_CORN:
-				return !isMarked(x, y) && hasSamePlayer(x, y, pathCalculable) && isCornPlantable(x, y);
+				return !isMarked(x, y) && hasSamePlayer(x, y, pathRequirements) && isCornPlantable(x, y);
 			case CUTTABLE_CORN:
-				return isMapObjectCuttable(x, y, EMapObjectType.CORN_ADULT) && hasSamePlayer(x, y, pathCalculable) && !isMarked(x, y);
+				return isMapObjectCuttable(x, y, EMapObjectType.CORN_ADULT) && hasSamePlayer(x, y, pathRequirements) && !isMarked(x, y);
 
 			case PLANTABLE_WINE:
-				return !isMarked(x, y) && hasSamePlayer(x, y, pathCalculable) && isWinePlantable(x, y);
+				return !isMarked(x, y) && hasSamePlayer(x, y, pathRequirements) && isWinePlantable(x, y);
 			case HARVESTABLE_WINE:
-				return isMapObjectCuttable(x, y, EMapObjectType.WINE_HARVESTABLE) && hasSamePlayer(x, y, pathCalculable) && !isMarked(x, y);
+				return isMapObjectCuttable(x, y, EMapObjectType.WINE_HARVESTABLE) && hasSamePlayer(x, y, pathRequirements) && !isMarked(x, y);
 
 			case CUTTABLE_STONE:
 				return y + 1 < height && x - 1 < width && isMapObjectCuttable(x - 1, y + 1, EMapObjectType.STONE)
-						&& hasSamePlayer(x, y, pathCalculable) && !isMarked(x, y);
+						&& hasSamePlayer(x, y, pathRequirements) && !isMarked(x, y);
 
 			case ENEMY: {
 				IMovable movable = movableGrid.getMovableAt(x, y);
-				return movable != null && movable.getPlayerId() != pathCalculable.getPlayerId();
+				return movable != null && movable.getPlayerId() != pathRequirements.getPlayerId();
 			}
 
 			case RIVER:
-				return isRiver(x, y) && hasSamePlayer(x, y, pathCalculable) && !isMarked(x, y);
+				return isRiver(x, y) && hasSamePlayer(x, y, pathRequirements) && !isMarked(x, y);
 
 			case FISHABLE:
-				return hasSamePlayer(x, y, pathCalculable) && hasNeighbourLandscape(x, y, ELandscapeType.WATER1);
+				return hasSamePlayer(x, y, pathRequirements) && hasNeighbourLandscape(x, y, ELandscapeType.WATER1);
 
 			case NON_BLOCKED_OR_PROTECTED:
 				return !(flagsGrid.isProtected(x, y) || flagsGrid.isBlocked(x, y))
-						&& (!pathCalculable.needsPlayersGround() || hasSamePlayer(x, y, pathCalculable)) && movableGrid.getMovableAt(x, y) == null;
+						&& (!pathRequirements.needsPlayersGround() || hasSamePlayer(x, y, pathRequirements))
+						&& movableGrid.getMovableAt(x, y) == null;
 
 			case SOLDIER_BOWMAN:
-				return isSoldierAt(x, y, searchType, pathCalculable.getPlayerId());
+				return isSoldierAt(x, y, searchType, pathRequirements.getPlayerId());
 			case SOLDIER_SWORDSMAN:
-				return isSoldierAt(x, y, searchType, pathCalculable.getPlayerId());
+				return isSoldierAt(x, y, searchType, pathRequirements.getPlayerId());
 			case SOLDIER_PIKEMAN:
-				return isSoldierAt(x, y, searchType, pathCalculable.getPlayerId());
+				return isSoldierAt(x, y, searchType, pathRequirements.getPlayerId());
 
 			case RESOURCE_SIGNABLE:
 				return isInBounds(x, y) && !flagsGrid.isProtected(x, y) && !flagsGrid.isMarked(x, y) && canAddRessourceSign(x, y);
 
 			case FOREIGN_MATERIAL:
-				return isInBounds(x, y) && !hasSamePlayer(x, y, pathCalculable) && mapObjectsManager.hasStealableMaterial(x, y);
+				return isInBounds(x, y) && !hasSamePlayer(x, y, pathRequirements) && mapObjectsManager.hasStealableMaterial(x, y);
 
 			default:
 				System.err.println("ERROR: Can't handle search type in fitsSearchType(): " + searchType);
@@ -530,8 +534,8 @@ public final class MainGrid implements Serializable {
 			return false;
 		}
 
-		private final boolean hasSamePlayer(int x, int y, IPathCalculatable requester) {
-			return partitionsGrid.getPlayerIdAt(x, y) == requester.getPlayerId();
+		private final boolean hasSamePlayer(int x, int y, IPathRequirements pathRequirements) {
+			return partitionsGrid.getPlayerIdAt(x, y) == pathRequirements.getPlayerId();
 		}
 
 		private final boolean isRiver(int x, int y) {
@@ -939,9 +943,9 @@ public final class MainGrid implements Serializable {
 
 		private transient PathfinderGrid pathfinderGrid;
 
-		private transient AbstractAStar aStar;
-		transient DijkstraAlgorithm dijkstra; // not private, because it's used by BuildingsGrid
-		private transient InAreaFinder inAreaFinder;
+		private transient AbstractAStar<IPathRequirements> aStar;
+		transient DijkstraAlgorithm<IPathRequirements> dijkstra; // not private, because it's used by BuildingsGrid
+		private transient InAreaFinder<IPathRequirements> inAreaFinder;
 
 		public MovablePathfinderGrid() {
 			initPathfinders();
@@ -955,9 +959,9 @@ public final class MainGrid implements Serializable {
 		private final void initPathfinders() {
 			pathfinderGrid = new PathfinderGrid();
 
-			aStar = new BucketQueueAStar(pathfinderGrid, width, height);
-			dijkstra = new DijkstraAlgorithm(pathfinderGrid, aStar, width, height);
-			inAreaFinder = new InAreaFinder(pathfinderGrid, width, height);
+			aStar = new BucketQueueAStar<IPathRequirements>(pathfinderGrid, width, height);
+			dijkstra = new DijkstraAlgorithm<IPathRequirements>(pathfinderGrid, aStar, width, height);
+			inAreaFinder = new InAreaFinder<IPathRequirements>(pathfinderGrid, width, height);
 		}
 
 		@Override
@@ -1177,20 +1181,22 @@ public final class MainGrid implements Serializable {
 		}
 
 		@Override
-		public Path calculatePathTo(IPathCalculatable pathRequester, ShortPoint2D targetPos) {
-			return aStar.findPath(pathRequester, targetPos);
+		public Path calculatePathTo(IPathRequirements pathRequirements, ShortPoint2D start, ShortPoint2D targetPos) {
+			return aStar.findPath(pathRequirements, start, targetPos);
 		}
 
 		@Override
-		public Path searchDijkstra(IPathCalculatable pathCalculateable, short centerX, short centerY, short radius, ESearchType searchType) {
-			return dijkstra.find(pathCalculateable, centerX, centerY, (short) 0, radius, searchType);
+		public Path searchDijkstra(IPathRequirements pathRequirements, ShortPoint2D start, short centerX, short centerY, short radius,
+				ESearchType searchType) {
+			return dijkstra.find(pathRequirements, start, centerX, centerY, (short) 0, radius, searchType);
 		}
 
 		@Override
-		public Path searchInArea(IPathCalculatable pathCalculateable, short centerX, short centerY, short radius, ESearchType searchType) {
-			ShortPoint2D target = inAreaFinder.find(pathCalculateable, centerX, centerY, radius, searchType);
+		public Path searchInArea(IPathRequirements pathRequirements, ShortPoint2D start, short centerX, short centerY, short radius,
+				ESearchType searchType) {
+			ShortPoint2D target = inAreaFinder.find(pathRequirements, centerX, centerY, radius, searchType);
 			if (target != null) {
-				return calculatePathTo(pathCalculateable, target);
+				return calculatePathTo(pathRequirements, start, target);
 			} else {
 				return null;
 			}
@@ -1212,8 +1218,8 @@ public final class MainGrid implements Serializable {
 		}
 
 		@Override
-		public boolean fitsSearchType(IPathCalculatable pathCalculable, ShortPoint2D pos, ESearchType searchType) {
-			return pathfinderGrid.fitsSearchType(pos.x, pos.y, searchType, pathCalculable);
+		public boolean fitsSearchType(short x, short y, ESearchType searchType, IPathRequirements pathRequirements) {
+			return pathfinderGrid.fitsSearchType(x, y, searchType, pathRequirements);
 		}
 
 		@Override
@@ -1295,14 +1301,14 @@ public final class MainGrid implements Serializable {
 		}
 
 		@Override
-		public boolean isValidPosition(IPathCalculatable pathCalculatable, ShortPoint2D position) {
-			return MainGrid.this.isValidPosition(pathCalculatable, position.x, position.y);
+		public boolean isValidPosition(IPathRequirements pathRequirements, ShortPoint2D position) {
+			return MainGrid.this.isValidPosition(pathRequirements, position.x, position.y);
 		}
 
 		@Override
-		public boolean isValidNextPathPosition(IPathCalculatable pathCalculatable, ShortPoint2D nextPos, ShortPoint2D targetPos) {
-			return isValidPosition(pathCalculatable, nextPos) && (!pathCalculatable.needsPlayersGround()
-					|| partitionsGrid.getPartitionAt(pathCalculatable) == partitionsGrid.getPartitionAt(targetPos.x, targetPos.y));
+		public boolean isValidNextPathPosition(IPathRequirements pathRequirements, ShortPoint2D nextPos, ShortPoint2D targetPos) {
+			return isValidPosition(pathRequirements, nextPos) && (!pathRequirements.needsPlayersGround()
+					|| partitionsGrid.getPartitionAt(nextPos.x, nextPos.y) == partitionsGrid.getPartitionAt(targetPos.x, targetPos.y));
 		}
 	}
 
@@ -1458,11 +1464,6 @@ public final class MainGrid implements Serializable {
 			partitionsGrid.getPartitionAt(barrack).requestSoilderable(barrack);
 		}
 
-		@Override
-		public final DijkstraAlgorithm getDijkstra() {
-			return movablePathfinderGrid.dijkstra;
-		}
-
 		private class RequestStackGrid implements IRequestsStackGrid, Serializable {
 			private static final long serialVersionUID = 1278397366408051067L;
 
@@ -1559,6 +1560,16 @@ public final class MainGrid implements Serializable {
 			MapCircle baseCircle = new MapCircle(center, radius);
 			MapCircleBorder border = new MapCircleBorder(baseCircle);
 			return new MapShapeFilter(border, width, height);
+		}
+
+		@Override
+		public boolean fitsSearchType(short x, short y, ESearchType searchType, IPathRequirements pathRequirements) {
+			return movablePathfinderGrid.fitsSearchType(x, y, searchType, pathRequirements);
+		}
+
+		@Override
+		public boolean isInBounds(short x, short y) {
+			return MainGrid.this.isInBounds(x, y);
 		}
 	}
 

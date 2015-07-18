@@ -37,7 +37,7 @@ import jsettlers.common.position.RelativePoint;
 import jsettlers.common.position.ShortPoint2D;
 import jsettlers.common.selectable.ESelectionType;
 import jsettlers.logic.buildings.military.Barrack;
-import jsettlers.logic.buildings.military.OccupyingBuilding;
+import jsettlers.logic.buildings.military.occupying.OccupyingBuilding;
 import jsettlers.logic.buildings.others.DefaultBuilding;
 import jsettlers.logic.buildings.others.StockBuilding;
 import jsettlers.logic.buildings.others.TempleBuilding;
@@ -124,9 +124,9 @@ public abstract class Building extends AbstractHexMapObject implements IConstruc
 	}
 
 	// TODO @Andreas Eberle: refactor building creating
-	public final void constructAt(IBuildingsGrid grid, ShortPoint2D pos, boolean fullyConstructed) {
+	public final boolean constructAt(IBuildingsGrid grid, ShortPoint2D pos, boolean fullyConstructed) {
 		if (fullyConstructed) {
-			appearAt(grid, pos);
+			return appearAt(grid, pos);
 		} else {
 			assert state == STATE_CREATED : "building can not be positioned in this state";
 
@@ -142,10 +142,11 @@ public abstract class Building extends AbstractHexMapObject implements IConstruc
 
 				requestDiggers();
 			}
+			return itWorked;
 		}
 	}
 
-	private final void appearAt(IBuildingsGrid grid, ShortPoint2D pos) {
+	private final boolean appearAt(IBuildingsGrid grid, ShortPoint2D pos) {
 		this.state = STATE_CONSTRUCTED;
 
 		boolean itWorked = positionAt(grid, pos);
@@ -155,8 +156,10 @@ public abstract class Building extends AbstractHexMapObject implements IConstruc
 			finishConstruction();
 
 			appearedEvent();
+			return true;
 		} else {
 			kill();
+			return false;
 		}
 	}
 
@@ -446,18 +449,18 @@ public abstract class Building extends AbstractHexMapObject implements IConstruc
 	public void kill() {
 		System.out.println("building killed");
 
-		grid.removeBuildingAt(pos);
-		grid.getMapObjectsManager().addSelfDeletingMapObject(pos,
-				EMapObjectType.BUILDING_DECONSTRUCTION_SMOKE, BUILDING_DESTRUCTION_SMOKE_DURATION, player);
-		placeAdditionalMapObjects(grid, pos, false);
-		placeFlag(false);
+		if (grid != null) {
+			grid.removeBuildingAt(pos);
+			grid.getMapObjectsManager().addSelfDeletingMapObject(pos,
+					EMapObjectType.BUILDING_DECONSTRUCTION_SMOKE, BUILDING_DESTRUCTION_SMOKE_DURATION, player);
+			placeAdditionalMapObjects(grid, pos, false);
+			placeFlag(false);
+			placeReusableMaterials();
+			releaseRequestStacks();
+		}
 
 		allBuildings.remove(this);
-
-		placeReusableMaterials();
-		releaseRequestStacks();
 		this.state = STATE_DESTROYED;
-
 		killedEvent();
 	}
 

@@ -16,7 +16,6 @@ package jsettlers.algorithms.path.astar;
 
 import java.util.BitSet;
 
-import jsettlers.algorithms.path.IPathCalculatable;
 import jsettlers.algorithms.path.InvalidStartPositionException;
 import jsettlers.algorithms.path.Path;
 import jsettlers.algorithms.path.astar.queues.bucket.AbstractBucketQueue;
@@ -30,11 +29,11 @@ import jsettlers.common.position.ShortPoint2D;
  * @author Andreas Eberle
  * 
  */
-public final class BucketQueueAStar extends AbstractAStar {
-	private static final byte[] xDeltaArray = EDirection.getXDeltaArray();
-	private static final byte[] yDeltaArray = EDirection.getYDeltaArray();
+public final class BucketQueueAStar<T> extends AbstractAStar<T> {
+	private static final byte[] xDeltaArray = EDirection.DIRECTION_DELTAS_X;
+	private static final byte[] yDeltaArray = EDirection.DIRECTION_DELTAS_Y;
 
-	private final IAStarPathMap map;
+	private final IAStarPathMap<T> map;
 
 	private final short height;
 	private final short width;
@@ -48,7 +47,7 @@ public final class BucketQueueAStar extends AbstractAStar {
 
 	private final AbstractBucketQueue open;
 
-	public BucketQueueAStar(IAStarPathMap map, short width, short height) {
+	public BucketQueueAStar(IAStarPathMap<T> map, short width, short height) {
 		this.map = map;
 		this.width = width;
 		this.height = height;
@@ -63,13 +62,12 @@ public final class BucketQueueAStar extends AbstractAStar {
 	}
 
 	@Override
-	public final Path findPath(IPathCalculatable requester, ShortPoint2D target) {
-		ShortPoint2D pos = requester.getPos();
-		return findPath(requester, pos.x, pos.y, target.x, target.y);
+	public final Path findPath(T requester, ShortPoint2D start, ShortPoint2D target) {
+		return findPath(requester, start.x, start.y, target.x, target.y);
 	}
 
 	@Override
-	public final Path findPath(IPathCalculatable requester, final short sx, final short sy, final short tx, final short ty) {
+	public final Path findPath(T requester, final short sx, final short sy, final short tx, final short ty) {
 		final boolean blockedAtStart;
 		if (!isInBounds(sx, sy)) {
 			throw new InvalidStartPositionException("Start position is out of bounds!", sx, sy);
@@ -185,7 +183,7 @@ public final class BucketQueueAStar extends AbstractAStar {
 		openBitSet.set(flatIdx);
 	}
 
-	private final boolean isValidPosition(IPathCalculatable requester, int x, int y, boolean blockedAtStart) {
+	private final boolean isValidPosition(T requester, int x, int y, boolean blockedAtStart) {
 		return isInBounds(x, y) && (!isBlocked(requester, x, y) || blockedAtStart);
 	}
 
@@ -193,7 +191,7 @@ public final class BucketQueueAStar extends AbstractAStar {
 		return 0 <= x && x < width && 0 <= y && y < height;
 	}
 
-	private final boolean isBlocked(IPathCalculatable requester, int x, int y) {
+	private final boolean isBlocked(T requester, int x, int y) {
 		return map.isBlocked(requester, x, y);
 	}
 
@@ -209,7 +207,7 @@ public final class BucketQueueAStar extends AbstractAStar {
 		return flatIdx / width;
 	}
 
-	private final int getHeuristicCost(final int sx, final int sy, final int tx, final int ty) {
+	protected int getHeuristicCost(final int sx, final int sy, final int tx, final int ty) {
 		final int dx = (tx - sx);
 		final int dy = (ty - sy);
 		final int absDx = Math.abs(dx);

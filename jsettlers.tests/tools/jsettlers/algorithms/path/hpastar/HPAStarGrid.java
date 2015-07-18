@@ -2,7 +2,6 @@ package jsettlers.algorithms.path.hpastar;
 
 import java.util.Random;
 
-import jsettlers.algorithms.path.IPathCalculatable;
 import jsettlers.algorithms.path.astar.IAStarPathMap;
 import jsettlers.common.Color;
 import jsettlers.common.CommonConstants;
@@ -59,8 +58,8 @@ public class HPAStarGrid {
 		return height;
 	}
 
-	float getCost(IPathCalculatable requester, int sx, int sy, int tx, int ty) {
-		return isBlocked(requester, tx, ty) ? Float.MAX_VALUE : 1;
+	float getCost(Object requirements, int sx, int sy, int tx, int ty) {
+		return isBlocked(requirements, tx, ty) ? Float.MAX_VALUE : 1;
 	}
 
 	void setDebugColor(int x, int y, Color color) {
@@ -71,7 +70,7 @@ public class HPAStarGrid {
 		return 1;
 	}
 
-	boolean isBlocked(IPathCalculatable requester, int x, int y) {
+	boolean isBlocked(Object requirements, int x, int y) {
 		return blocked[x][y];
 	}
 
@@ -83,8 +82,8 @@ public class HPAStarGrid {
 		}
 	}
 
-	public IAStarPathMap getAStarMap() {
-		return new IAStarPathMap() {
+	public IAStarPathMap<Object> getAStarMap() {
+		return new IAStarPathMap<Object>() {
 
 			@Override
 			public void setDebugColor(int x, int y, Color color) {
@@ -102,8 +101,8 @@ public class HPAStarGrid {
 			}
 
 			@Override
-			public boolean isBlocked(IPathCalculatable requester, int x, int y) {
-				return HPAStarGrid.this.isBlocked(requester, x, y);
+			public boolean isBlocked(Object requirements, int x, int y) {
+				return HPAStarGrid.this.isBlocked(requirements, x, y);
 			}
 
 			@Override

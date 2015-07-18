@@ -15,9 +15,9 @@
 package jsettlers.algorithms.path.astar;
 
 import static org.junit.Assert.assertEquals;
-import jsettlers.algorithms.path.IPathCalculatable;
 import jsettlers.algorithms.path.Path;
 import jsettlers.common.position.ShortPoint2D;
+import jsettlers.logic.map.grid.IPathRequirements;
 
 import org.junit.Test;
 
@@ -26,7 +26,7 @@ public class BucketQueueAStarTest {
 	private static final short WIDTH = 200;
 	private static final short HEIGHT = 200;
 
-	private final AbstractAStar aStar = new BucketQueueAStar(new DummyEmptyAStarMap(WIDTH, HEIGHT), WIDTH, HEIGHT);
+	private final AbstractAStar<IPathRequirements> aStar = new BucketQueueAStar<>(new DummyEmptyAStarMap(WIDTH, HEIGHT), WIDTH, HEIGHT);
 
 	@Test
 	public void testPathLengthSingle() {
@@ -58,25 +58,7 @@ public class BucketQueueAStarTest {
 	}
 
 	private Path findPath(short sx, short sy, short tx, short ty) {
-		return aStar.findPath(getPathable(sx, sy), new ShortPoint2D(tx, ty));
+		return aStar.findPath(null, sx, sy, tx, ty);
 	}
 
-	private IPathCalculatable getPathable(final short x, final short y) {
-		return new IPathCalculatable() {
-			@Override
-			public ShortPoint2D getPos() {
-				return new ShortPoint2D(x, y);
-			}
-
-			@Override
-			public byte getPlayerId() {
-				return 0;
-			}
-
-			@Override
-			public boolean needsPlayersGround() {
-				return false;
-			}
-		};
-	}
 }

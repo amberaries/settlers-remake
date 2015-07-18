@@ -14,13 +14,12 @@
  *******************************************************************************/
 package jsettlers.algorithms.path.area;
 
-import jsettlers.algorithms.path.IPathCalculatable;
 import jsettlers.common.material.ESearchType;
 
-public interface IInAreaFinderMap {
+public interface IInAreaFinderMap<T> {
 
-	boolean isBlocked(IPathCalculatable requester, int tileX, int tileY);
+	boolean isBlocked(T requester, int tileX, int tileY);
 
-	boolean fitsSearchType(int tileX, int tileY, ESearchType searched, IPathCalculatable requester);
+	boolean fitsSearchType(int tileX, int tileY, ESearchType searched, T requester);
 
 }
