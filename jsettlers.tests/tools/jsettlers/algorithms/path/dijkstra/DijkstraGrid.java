@@ -12,13 +12,14 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *******************************************************************************/
- package jsettlers.algorithms.path.dijkstra;
+package jsettlers.algorithms.path.dijkstra;
 
 public abstract class DijkstraGrid {
 
-	public abstract int getCosts(int x1, int y1, int x2, int y2);
+	public abstract float getCosts(int x1, int y1, int x2, int y2);
 
-	public abstract short getWidth();
+	public abstract void markAsClosed(int x, int y);
 
-	public abstract short getHeight();
+	public abstract void markAsOpen(int neighborX, int neighborY);
+
 }

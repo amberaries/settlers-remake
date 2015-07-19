@@ -41,9 +41,9 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 	private final BitSet openBitSet;
 	private final BitSet closedBitSet;
 
-	final float[] costs;
+	private final float[] costs;
 
-	final int[] depthParentHeap;
+	private final int[] depthParentHeap;
 
 	private final AbstractMinBucketQueue open;
 
@@ -71,11 +71,11 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 		final boolean blockedAtStart;
 		if (!isInBounds(sx, sy)) {
 			throw new InvalidStartPositionException("Start position is out of bounds!", sx, sy);
-		} else if (!isInBounds(tx, ty) || isBlocked(requester, tx, ty) || map.getBlockedPartition(sx, sy) != map.getBlockedPartition(tx, ty)) {
+		} else if (!isInBounds(tx, ty) || map.isBlocked(requester, tx, ty) || map.getBlockedPartition(sx, sy) != map.getBlockedPartition(tx, ty)) {
 			return null; // target can not be reached
 		} else if (sx == tx && sy == ty) {
 			return null;
-		} else if (isBlocked(requester, sx, sy)) {
+		} else if (map.isBlocked(requester, sx, sy)) {
 			blockedAtStart = true;
 		} else {
 			blockedAtStart = false;
@@ -85,24 +85,26 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 
 		closedBitSet.clear();
 		openBitSet.clear();
-
 		open.clear();
-		boolean found = false;
+
 		initStartNode(sx, sy, tx, ty);
 
 		while (!open.isEmpty()) {
-			int currFlatIdx = open.deleteMin();
-
+			// get next position to close
+			final int currFlatIdx = open.deleteMin();
 			final int x = getX(currFlatIdx);
 			final int y = getY(currFlatIdx);
 
-			setClosed(x, y);
+			// close current position
+			closedBitSet.set(currFlatIdx);
+			map.markAsClosed(x, y);
 
+			// is this the target position?
 			if (targetFlatIdx == currFlatIdx) {
-				found = true;
 				break;
 			}
 
+			// explore neighbors
 			final float currPositionCosts = costs[currFlatIdx];
 
 			for (int i = 0; i < EDirection.NUMBER_OF_DIRECTIONS; i++) {
@@ -141,7 +143,7 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 			}
 		}
 
-		if (found) {
+		if (closedBitSet.get(targetFlatIdx)) {
 			int pathlength = depthParentHeap[getDepthIdx(getFlatIdx(tx, ty))];
 			Path path = new Path(pathlength);
 
@@ -168,11 +170,6 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 		return 2 * flatIdx + 1;
 	}
 
-	private final void setClosed(int x, int y) {
-		closedBitSet.set(getFlatIdx(x, y));
-		map.markAsClosed(x, y);
-	}
-
 	private final void initStartNode(int sx, int sy, int tx, int ty) {
 		int flatIdx = getFlatIdx(sx, sy);
 		depthParentHeap[getDepthIdx(flatIdx)] = 0;
@@ -184,15 +181,11 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 	}
 
 	private final boolean isValidPosition(T requester, int x, int y, boolean blockedAtStart) {
-		return isInBounds(x, y) && (!isBlocked(requester, x, y) || blockedAtStart);
+		return isInBounds(x, y) && (!map.isBlocked(requester, x, y) || blockedAtStart);
 	}
 
 	private final boolean isInBounds(int x, int y) {
 		return 0 <= x && x < width && 0 <= y && y < height;
-	}
-
-	private final boolean isBlocked(T requester, int x, int y) {
-		return map.isBlocked(requester, x, y);
 	}
 
 	private final int getFlatIdx(int x, int y) {
@@ -207,7 +200,7 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 		return flatIdx / width;
 	}
 
-	protected int getHeuristicCost(final int sx, final int sy, final int tx, final int ty) {
+	private final int getHeuristicCost(final int sx, final int sy, final int tx, final int ty) {
 		final int dx = (tx - sx);
 		final int dy = (ty - sy);
 		final int absDx = Math.abs(dx);
