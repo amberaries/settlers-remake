@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import jsettlers.TestUtils;
-import jsettlers.algorithms.path.astar.queues.bucket.DoubleLinkedIntListItem;
+import jsettlers.algorithms.queues.bucket.DoubleLinkedIntListItem;
 
 import org.junit.Test;
 

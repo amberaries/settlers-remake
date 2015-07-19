@@ -18,8 +18,8 @@ import java.util.BitSet;
 
 import jsettlers.algorithms.path.InvalidStartPositionException;
 import jsettlers.algorithms.path.Path;
-import jsettlers.algorithms.path.astar.queues.bucket.AbstractBucketQueue;
-import jsettlers.algorithms.path.astar.queues.bucket.ListMinBucketQueue;
+import jsettlers.algorithms.queues.bucket.AbstractMinBucketQueue;
+import jsettlers.algorithms.queues.bucket.ListMinBucketQueue;
 import jsettlers.common.movable.EDirection;
 import jsettlers.common.position.ShortPoint2D;
 
@@ -45,7 +45,7 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 
 	final int[] depthParentHeap;
 
-	private final AbstractBucketQueue open;
+	private final AbstractMinBucketQueue open;
 
 	public BucketQueueAStar(IAStarPathMap<T> map, short width, short height) {
 		this.map = map;

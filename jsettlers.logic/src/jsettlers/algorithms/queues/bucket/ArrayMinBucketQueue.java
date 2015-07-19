@@ -12,11 +12,11 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *******************************************************************************/
-package jsettlers.algorithms.path.astar.queues.bucket;
+package jsettlers.algorithms.queues.bucket;
 
 import jsettlers.algorithms.path.arrays.IntArrayStack;
 
-public final class ArrayMinBucketQueue extends AbstractBucketQueue {
+public final class ArrayMinBucketQueue extends AbstractMinBucketQueue {
 	/**
 	 * NOTE: The number of buckets MUST BE a power of 2!!
 	 */

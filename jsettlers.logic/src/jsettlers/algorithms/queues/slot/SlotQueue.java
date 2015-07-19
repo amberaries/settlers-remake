@@ -12,13 +12,14 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *******************************************************************************/
-package jsettlers.algorithms.queue;
+package jsettlers.algorithms.queues.slot;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import jsettlers.algorithms.queues.ITypeAcceptor;
 import jsettlers.common.map.shapes.MapCircle;
 import jsettlers.common.position.ILocatable;
 import jsettlers.common.position.ShortPoint2D;

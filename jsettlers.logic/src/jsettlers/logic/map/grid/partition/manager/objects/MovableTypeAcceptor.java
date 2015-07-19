@@ -16,7 +16,7 @@ package jsettlers.logic.map.grid.partition.manager.objects;
 
 import java.io.Serializable;
 
-import jsettlers.algorithms.queue.ITypeAcceptor;
+import jsettlers.algorithms.queues.ITypeAcceptor;
 import jsettlers.common.movable.EMovableType;
 import jsettlers.logic.map.grid.partition.manager.manageables.IManageableWorker;
 

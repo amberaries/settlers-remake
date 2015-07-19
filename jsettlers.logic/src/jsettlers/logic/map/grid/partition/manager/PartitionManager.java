@@ -18,7 +18,7 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import jsettlers.algorithms.queue.SlotQueue;
+import jsettlers.algorithms.queues.slot.SlotQueue;
 import jsettlers.common.map.partition.IPartitionData;
 import jsettlers.common.material.EMaterialType;
 import jsettlers.common.movable.EDirection;

@@ -12,7 +12,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *******************************************************************************/
-package jsettlers.algorithms.path.astar.queues.bucket;
+package jsettlers.algorithms.queues.bucket;
 
 import jsettlers.common.utils.collections.list.DoubleLinkedList;
 
@@ -25,7 +25,7 @@ import jsettlers.common.utils.collections.list.DoubleLinkedList;
  * @author Andreas Eberle
  * 
  */
-public final class ListMinBucketQueue extends AbstractBucketQueue {
+public final class ListMinBucketQueue extends AbstractMinBucketQueue {
 	/**
 	 * NOTE: The number of buckets MUST BE a power of 2!!
 	 */

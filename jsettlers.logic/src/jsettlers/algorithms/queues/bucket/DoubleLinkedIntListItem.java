@@ -12,39 +12,49 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *******************************************************************************/
-package jsettlers.algorithms.path.astar.queues.bucket;
+package jsettlers.algorithms.queues.bucket;
 
-public abstract class AbstractBucketQueue {
-	public abstract void insert(int elementId, float rank);
+import jsettlers.common.utils.collections.list.DoubleLinkedListItem;
 
-	public abstract int size();
+/**
+ * This class represents a single item of a {@link DoubleLinkedIntList}.
+ * 
+ * @author Andreas Eberle
+ * 
+ */
+public final class DoubleLinkedIntListItem extends DoubleLinkedListItem<DoubleLinkedIntListItem> {
+	private static final long serialVersionUID = -4196178838347323078L;
 
-	public abstract void clear();
+	public final int value;
 
-	/**
-	 * Deletes the element of the heap that has the minimal value.
-	 * <p>
-	 * If the heap is empty, no action is performed.
-	 * 
-	 * @return The deleted element, or -1 if the heap was empty.
-	 */
-	public abstract int deleteMin();
+	public DoubleLinkedIntListItem(int value) {
+		this.value = value;
+		assert value >= 0;
+	}
 
-	/**
-	 * This method must be called to update the position in the priority queue when the costs of the element had been reduced (the priority has
-	 * increased!).
-	 * 
-	 * @param elementId
-	 *            Id of the element.
-	 * @param newRank
-	 *            the old rank of the element.
-	 */
-	public abstract void increasedPriority(int elementId, float oldRank, float newRank);
+	public DoubleLinkedIntListItem() {
+		value = -1;
+	}
 
-	/**
-	 * 
-	 * @return Returns true if the priority queue is empty,<br>
-	 *         false if it's not empty.
-	 */
-	public abstract boolean isEmpty();
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + value;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DoubleLinkedIntListItem other = (DoubleLinkedIntListItem) obj;
+		if (value != other.value)
+			return false;
+		return true;
+	}
 }
