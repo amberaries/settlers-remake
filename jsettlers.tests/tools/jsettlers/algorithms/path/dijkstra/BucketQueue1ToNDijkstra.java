@@ -15,13 +15,13 @@
 package jsettlers.algorithms.path.dijkstra;
 
 import java.util.BitSet;
-import java.util.Iterator;
 import java.util.List;
 
 import jsettlers.algorithms.queues.bucket.AbstractMinBucketQueue;
 import jsettlers.algorithms.queues.bucket.ListMinBucketQueue;
 import jsettlers.common.movable.EDirection;
 import jsettlers.common.position.ShortPoint2D;
+import jsettlers.common.utils.Tuple;
 
 /**
  * Dijkstra algorithm to find paths from start to several targets in a given boundary
@@ -55,7 +55,7 @@ public final class BucketQueue1ToNDijkstra {
 		this.costs = new float[width * height];
 	}
 
-	public final Object findPath(final ShortPoint2D minCorner, final ShortPoint2D maxCorner, final ShortPoint2D start,
+	public final Tuple<Integer, float[]> calculateCosts(final ShortPoint2D minCorner, final ShortPoint2D maxCorner, final ShortPoint2D start,
 			final List<? extends ShortPoint2D> targets) {
 		closedBitSet.clear();
 		openBitSet.clear();
@@ -114,24 +114,18 @@ public final class BucketQueue1ToNDijkstra {
 
 		float[] costsOfTargets = new float[targets.size()];
 		int idx = 0;
-		for (Iterator<? extends ShortPoint2D> iterator = targets.iterator(); iterator.hasNext();) {
-			ShortPoint2D v = iterator.next();
-			int flatIdx = getFlatIdx(v.x, v.y);
+		int connectedTargets = 0;
+		for (ShortPoint2D target : targets) {
+			int flatIdx = getFlatIdx(target.x, target.y);
 
 			if (closedBitSet.get(flatIdx)) {
-				costsOfTargets[idx++] = costs[flatIdx];
-			} else {
-				iterator.remove(); // remove nodes that cannot be reached
+				costsOfTargets[idx] = costs[flatIdx];
+				connectedTargets++;
 			}
+			idx++;
 		}
 
-		if (targets.size() < costsOfTargets.length) {
-			float[] result = new float[targets.size()];
-			System.arraycopy(costsOfTargets, 0, result, 0, result.length);
-			return result;
-		} else {
-			return costsOfTargets;
-		}
+		return new Tuple<>(connectedTargets, costsOfTargets);
 	}
 
 	private final void initStartNode(ShortPoint2D start) {

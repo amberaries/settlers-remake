@@ -19,9 +19,16 @@ import jsettlers.network.synchronic.timer.NetworkTimer;
 
 public class HPAStarTesterWnd {
 
+	private static final boolean RANDOM_MAP = true;
+	private static final int CELL_SIZE = 10;
+
 	public static void main(String args[]) throws MapLoadException {
-		final HPAStarGrid grid = new HPAStarGrid(60, 60, 1f / 3);
-		// final HPAStarGrid grid = getGridByMap("big map");
+		final HPAStarGrid grid;
+		if (RANDOM_MAP) {
+			grid = new HPAStarGrid(60, 60, 1f / 3);
+		} else {
+			grid = getGridByMap("big map");
+		}
 
 		MapInterfaceConnector connector = TestUtils.openTestWindow(grid.getGraphicsGrid());
 
@@ -60,7 +67,7 @@ public class HPAStarTesterWnd {
 
 		MilliStopWatch watch = new MilliStopWatch();
 		HPAStar hpaStar = new HPAStar(grid);
-		hpaStar.calculateTransitions(10);
+		hpaStar.calculateTransitions(CELL_SIZE);
 		watch.stop("calculating transitions needed");
 	}
 

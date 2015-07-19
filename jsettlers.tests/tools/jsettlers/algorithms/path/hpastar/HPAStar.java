@@ -1,3 +1,17 @@
+/*******************************************************************************
+ * Copyright (c) 2015
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *******************************************************************************/
 package jsettlers.algorithms.path.hpastar;
 
 import java.util.ArrayList;
@@ -5,14 +19,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import jsettlers.algorithms.path.dijkstra.BucketQueue1ToNDijkstra;
+import jsettlers.algorithms.path.hpastar.graph.Vertex;
 import jsettlers.common.Color;
+import jsettlers.common.logging.MilliStopWatch;
 import jsettlers.common.position.ShortPoint2D;
+import jsettlers.common.utils.Tuple;
 
 public class HPAStar {
 
 	private final HPAStarGrid grid;
-	private final int width;
-	private final int height;
+	private final short width;
+	private final short height;
 
 	public HPAStar(HPAStarGrid grid) {
 		this.grid = grid;
@@ -20,7 +38,7 @@ public class HPAStar {
 		this.height = grid.getHeight();
 	}
 
-	public void calculateTransitions(int cellSize) {
+	public HashMap<ShortPoint2D, List<Vertex>> calculateTransitions(int cellSize) {
 		HashMap<ShortPoint2D, Transition> transitions = new HashMap<>();
 
 		xCalculateTransitions(cellSize, transitions);
@@ -31,6 +49,53 @@ public class HPAStar {
 		System.out.println("number of transitions: " + transitions.size());
 
 		HashMap<ShortPoint2D, List<Transition>> cells = calculateCells(transitions, cellSize);
+
+		MilliStopWatch watch = new MilliStopWatch();
+		BucketQueue1ToNDijkstra dijkstra = new BucketQueue1ToNDijkstra(grid, width, height);
+
+		HashMap<ShortPoint2D, List<Vertex>> vertexGrid = new HashMap<>();
+
+		for (Entry<ShortPoint2D, List<Transition>> cell : cells.entrySet()) {
+			List<Vertex> vertexList = new ArrayList<Vertex>();
+			vertexGrid.put(cell.getKey(), vertexList);
+
+			ShortPoint2D minCorner = cell.getKey().multiply(cellSize);
+			ShortPoint2D maxCorner = minCorner.add(cellSize - 1);
+
+			List<Transition> cellTransitions = cell.getValue();
+			for (Transition transition : cellTransitions) {
+				grid.clearDebugColors();
+
+				Tuple<Integer, float[]> dijkstraResult = dijkstra.calculateCosts(minCorner, maxCorner, transition, cellTransitions);
+
+				float[] costs = new float[dijkstraResult.e1 + transition.getNeighbors().size()];
+				Vertex[] neighbors = new Vertex[costs.length];
+
+				int idx = 0;
+				float[] dijkstraCosts = dijkstraResult.e2;
+
+				for (int i = 0; i < dijkstraCosts.length; i++) {
+					if (dijkstraCosts[i] > 0) {
+						costs[idx] = dijkstraCosts[i];
+						neighbors[idx] = cellTransitions.get(i).getVertex();
+						idx++;
+					}
+				}
+
+				for (Transition neighbor : transition.getNeighbors()) {
+					costs[idx] = grid.getCosts(transition.x, transition.y, neighbor.x, neighbor.y);
+					neighbors[idx] = neighbor.getVertex();
+					idx++;
+				}
+
+				Vertex vertex = transition.getVertex();
+				vertex.setNeighbors(neighbors, costs);
+				vertexList.add(vertex);
+			}
+		}
+		watch.stop("costs calculation took");
+
+		return vertexGrid;
 	}
 
 	private HashMap<ShortPoint2D, List<Transition>> calculateCells(HashMap<ShortPoint2D, Transition> transitions, int cellSize) {

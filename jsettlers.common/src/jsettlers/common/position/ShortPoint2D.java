@@ -114,4 +114,12 @@ public class ShortPoint2D implements Serializable {
 	public boolean equals(int x, int y) {
 		return this.x == x && this.y == y;
 	}
+
+	public ShortPoint2D multiply(int factor) {
+		return new ShortPoint2D(x * factor, y * factor);
+	}
+
+	public ShortPoint2D add(int value) {
+		return new ShortPoint2D(x + value, y + value);
+	}
 }

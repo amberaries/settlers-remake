@@ -3,6 +3,7 @@ package jsettlers.algorithms.path.hpastar;
 import java.util.Random;
 
 import jsettlers.algorithms.path.astar.IAStarPathMap;
+import jsettlers.algorithms.path.dijkstra.DijkstraGrid;
 import jsettlers.common.Color;
 import jsettlers.common.CommonConstants;
 import jsettlers.common.landscape.ELandscapeType;
@@ -15,7 +16,7 @@ import jsettlers.common.movable.IMovable;
 import jsettlers.logic.map.grid.MainGridDataAccessor;
 import jsettlers.logic.map.grid.flags.FlagsGrid;
 
-public class HPAStarGrid {
+public class HPAStarGrid extends DijkstraGrid {
 	private final short width;
 	private final short height;
 	private final boolean[][] blocked;
@@ -50,11 +51,11 @@ public class HPAStarGrid {
 		}
 	}
 
-	public int getWidth() {
+	public short getWidth() {
 		return width;
 	}
 
-	public int getHeight() {
+	public short getHeight() {
 		return height;
 	}
 
@@ -185,6 +186,21 @@ public class HPAStarGrid {
 				return debugColor == 0 ? blocked[x][y] ? Color.BLACK.getARGB() : 0 : debugColor;
 			}
 		};
+	}
+
+	@Override
+	public float getCosts(int sx, int sy, int tx, int ty) {
+		return getCost(null, sx, sy, tx, ty);
+	}
+
+	@Override
+	public void markAsClosed(int x, int y) {
+		setDebugColor(x, y, Color.RED);
+	}
+
+	@Override
+	public void markAsOpen(int x, int y) {
+		setDebugColor(x, y, Color.ORANGE);
 	}
 
 }
