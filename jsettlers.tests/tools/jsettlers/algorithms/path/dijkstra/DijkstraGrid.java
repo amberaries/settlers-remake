@@ -16,7 +16,7 @@ package jsettlers.algorithms.path.dijkstra;
 
 public abstract class DijkstraGrid {
 
-	public abstract float getCosts(int sx, int sy, int tx, int ty);
+	public abstract float getCost(int sx, int sy, int tx, int ty);
 
 	public abstract void markAsClosed(int x, int y);
 

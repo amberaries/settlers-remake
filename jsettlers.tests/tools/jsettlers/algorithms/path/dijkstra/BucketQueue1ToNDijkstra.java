@@ -84,7 +84,7 @@ public final class BucketQueue1ToNDijkstra {
 					continue; // skip positions out of bounds
 				}
 
-				float stepCosts = map.getCosts(x, y, neighborX, neighborY);
+				float stepCosts = map.getCost(x, y, neighborX, neighborY);
 
 				if (stepCosts < Float.MAX_VALUE) {
 					final int flatNeighborIdx = getFlatIdx(neighborX, neighborY);

@@ -23,9 +23,9 @@ public class HPAStarTesterWnd {
 	private static final int CELL_SIZE = 10;
 
 	public static void main(String args[]) throws MapLoadException {
-		final HPAStarGrid grid;
+		final HPAStarBaseGrid grid;
 		if (RANDOM_MAP) {
-			grid = new HPAStarGrid(60, 60, 1f / 3);
+			grid = new HPAStarBaseGrid(60, 60, 1f / 3);
 		} else {
 			grid = getGridByMap("big map");
 		}
@@ -71,7 +71,7 @@ public class HPAStarTesterWnd {
 		watch.stop("calculating transitions needed");
 	}
 
-	private static HPAStarGrid getGridByMap(String mapName) throws MapLoadException {
+	private static HPAStarBaseGrid getGridByMap(String mapName) throws MapLoadException {
 		TestUtils.setupSwingResources();
 
 		MapLoader map = MapList.getDefaultList().getMapByName(mapName);
@@ -82,6 +82,6 @@ public class HPAStarTesterWnd {
 		Arrays.fill(players, true);
 
 		MainGrid grid = map.loadMainGrid(players).getMainGrid();
-		return new HPAStarGrid(new MainGridDataAccessor(grid));
+		return new HPAStarBaseGrid(new MainGridDataAccessor(grid));
 	}
 }

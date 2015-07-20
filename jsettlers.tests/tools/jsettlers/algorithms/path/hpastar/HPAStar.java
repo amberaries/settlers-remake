@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import jsettlers.algorithms.path.dijkstra.BucketQueue1ToNDijkstra;
+import jsettlers.algorithms.path.hpastar.graph.HPAStarAbstractedGrid;
 import jsettlers.algorithms.path.hpastar.graph.Vertex;
 import jsettlers.common.Color;
 import jsettlers.common.logging.MilliStopWatch;
@@ -28,17 +29,17 @@ import jsettlers.common.utils.Tuple;
 
 public class HPAStar {
 
-	private final HPAStarGrid grid;
+	private final HPAStarBaseGrid grid;
 	private final short width;
 	private final short height;
 
-	public HPAStar(HPAStarGrid grid) {
+	public HPAStar(HPAStarBaseGrid grid) {
 		this.grid = grid;
 		this.width = grid.getWidth();
 		this.height = grid.getHeight();
 	}
 
-	public HashMap<ShortPoint2D, List<Vertex>> calculateTransitions(int cellSize) {
+	public HPAStarAbstractedGrid calculateTransitions(int cellSize) {
 		HashMap<ShortPoint2D, Transition> transitions = new HashMap<>();
 
 		xCalculateTransitions(cellSize, transitions);
@@ -51,6 +52,13 @@ public class HPAStar {
 		HashMap<ShortPoint2D, List<Transition>> cells = calculateCells(transitions, cellSize);
 
 		MilliStopWatch watch = new MilliStopWatch();
+		HPAStarAbstractedGrid abstractedGrid = calculateAbstractedGrid(cellSize, cells);
+		watch.stop("costs calculation took");
+
+		return abstractedGrid;
+	}
+
+	private HPAStarAbstractedGrid calculateAbstractedGrid(int cellSize, HashMap<ShortPoint2D, List<Transition>> cells) {
 		BucketQueue1ToNDijkstra dijkstra = new BucketQueue1ToNDijkstra(grid, width, height);
 
 		HashMap<ShortPoint2D, List<Vertex>> vertexGrid = new HashMap<>();
@@ -83,7 +91,7 @@ public class HPAStar {
 				}
 
 				for (Transition neighbor : transition.getNeighbors()) {
-					costs[idx] = grid.getCosts(transition.x, transition.y, neighbor.x, neighbor.y);
+					costs[idx] = grid.getCost(transition.x, transition.y, neighbor.x, neighbor.y);
 					neighbors[idx] = neighbor.getVertex();
 					idx++;
 				}
@@ -93,9 +101,7 @@ public class HPAStar {
 				vertexList.add(vertex);
 			}
 		}
-		watch.stop("costs calculation took");
-
-		return vertexGrid;
+		return new HPAStarAbstractedGrid(vertexGrid);
 	}
 
 	private HashMap<ShortPoint2D, List<Transition>> calculateCells(HashMap<ShortPoint2D, Transition> transitions, int cellSize) {

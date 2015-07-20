@@ -16,20 +16,20 @@ import jsettlers.common.movable.IMovable;
 import jsettlers.logic.map.grid.MainGridDataAccessor;
 import jsettlers.logic.map.grid.flags.FlagsGrid;
 
-public class HPAStarGrid extends DijkstraGrid {
+public class HPAStarBaseGrid extends DijkstraGrid {
 	private final short width;
 	private final short height;
 	private final boolean[][] blocked;
 	private final int[][] debugColors;
 
-	public HPAStarGrid(int width, int height) {
+	public HPAStarBaseGrid(int width, int height) {
 		this.width = (short) width;
 		this.height = (short) height;
 		blocked = new boolean[width][height];
 		debugColors = new int[width][height];
 	}
 
-	public HPAStarGrid(final int width, final int height, float blockedPercentage) {
+	public HPAStarBaseGrid(final int width, final int height, float blockedPercentage) {
 		this(width, height);
 
 		Random r = new Random(1234);
@@ -40,7 +40,7 @@ public class HPAStarGrid extends DijkstraGrid {
 		}
 	}
 
-	public HPAStarGrid(MainGridDataAccessor grid) {
+	public HPAStarBaseGrid(MainGridDataAccessor grid) {
 		this(grid.getWidth(), grid.getHeight());
 
 		FlagsGrid flagsGrid = grid.getFlagsGrid();
@@ -88,27 +88,27 @@ public class HPAStarGrid extends DijkstraGrid {
 
 			@Override
 			public void setDebugColor(int x, int y, Color color) {
-				HPAStarGrid.this.setDebugColor(x, y, color);
+				HPAStarBaseGrid.this.setDebugColor(x, y, color);
 			}
 
 			@Override
 			public void markAsOpen(int x, int y) {
-				HPAStarGrid.this.setDebugColor(x, y, Color.ORANGE.colorWithAlpha(0.2f));
+				HPAStarBaseGrid.this.setDebugColor(x, y, Color.ORANGE.colorWithAlpha(0.2f));
 			}
 
 			@Override
 			public void markAsClosed(int x, int y) {
-				HPAStarGrid.this.setDebugColor(x, y, Color.RED.colorWithAlpha(0.2f));
+				HPAStarBaseGrid.this.setDebugColor(x, y, Color.RED.colorWithAlpha(0.2f));
 			}
 
 			@Override
 			public boolean isBlocked(Object requirements, int x, int y) {
-				return HPAStarGrid.this.isBlocked(requirements, x, y);
+				return HPAStarBaseGrid.this.isBlocked(requirements, x, y);
 			}
 
 			@Override
 			public float getCost(int sx, int sy, int tx, int ty) {
-				return HPAStarGrid.this.getCost(null, sx, sy, tx, ty);
+				return HPAStarBaseGrid.this.getCost(null, sx, sy, tx, ty);
 			}
 
 			@Override
@@ -189,7 +189,7 @@ public class HPAStarGrid extends DijkstraGrid {
 	}
 
 	@Override
-	public float getCosts(int sx, int sy, int tx, int ty) {
+	public float getCost(int sx, int sy, int tx, int ty) {
 		return getCost(null, sx, sy, tx, ty);
 	}
 
