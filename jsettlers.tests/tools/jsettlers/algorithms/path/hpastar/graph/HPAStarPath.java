@@ -12,28 +12,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *******************************************************************************/
-package jsettlers.algorithms.path.hpastar;
+package jsettlers.algorithms.path.hpastar.graph;
 
-import jsettlers.algorithms.path.dijkstra.DijkstraGrid;
-import jsettlers.algorithms.path.hpastar.graph.HPAStarAbstractedGrid;
-import jsettlers.algorithms.path.hpastar.graph.HPAStarPath;
+public class HPAStarPath {
 
-public class HPAStar {
-
-	private final HPAStarAbstractedGrid abstractedGrid;
-	private final DijkstraGrid dijkstraGrid;
-	private final short width;
-	private final short height;
-
-	public HPAStar(HPAStarAbstractedGrid abstractedGrid, DijkstraGrid dijkstraGrid, short width, short height) {
-		this.abstractedGrid = abstractedGrid;
-		this.dijkstraGrid = dijkstraGrid;
-		this.width = width;
-		this.height = height;
-	}
-
-	public HPAStarPath findPath(int sx, int sy, int tx, int ty) {
-
-		return null;
-	}
 }

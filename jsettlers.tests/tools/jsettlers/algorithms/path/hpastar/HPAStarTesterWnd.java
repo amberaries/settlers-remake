@@ -3,6 +3,8 @@ package jsettlers.algorithms.path.hpastar;
 import java.util.Arrays;
 
 import jsettlers.TestUtils;
+import jsettlers.algorithms.path.hpastar.graph.HPAStarAbstractedGrid;
+import jsettlers.algorithms.path.hpastar.graph.generation.HPAStarAbstractedGridFactory;
 import jsettlers.common.logging.MilliStopWatch;
 import jsettlers.common.map.MapLoadException;
 import jsettlers.common.position.ShortPoint2D;
@@ -23,9 +25,9 @@ public class HPAStarTesterWnd {
 	private static final int CELL_SIZE = 10;
 
 	public static void main(String args[]) throws MapLoadException {
-		final HPAStarBaseGrid grid;
+		final HPAStarTestGrid grid;
 		if (RANDOM_MAP) {
-			grid = new HPAStarBaseGrid(60, 60, 1f / 3);
+			grid = new HPAStarTestGrid(60, 60, 1f / 3);
 		} else {
 			grid = getGridByMap("big map");
 		}
@@ -66,12 +68,13 @@ public class HPAStarTesterWnd {
 		// });
 
 		MilliStopWatch watch = new MilliStopWatch();
-		HPAStar hpaStar = new HPAStar(grid);
-		hpaStar.calculateTransitions(CELL_SIZE);
-		watch.stop("calculating transitions needed");
+		HPAStarAbstractedGridFactory hpaStar = new HPAStarAbstractedGridFactory(grid, grid.getWidth(), grid.getHeight());
+		HPAStarAbstractedGrid abstractedGrid = hpaStar.calculateAbstractedGrid(CELL_SIZE);
+		watch.stop("calculating abstracted grid needed");
+
 	}
 
-	private static HPAStarBaseGrid getGridByMap(String mapName) throws MapLoadException {
+	private static HPAStarTestGrid getGridByMap(String mapName) throws MapLoadException {
 		TestUtils.setupSwingResources();
 
 		MapLoader map = MapList.getDefaultList().getMapByName(mapName);
@@ -82,6 +85,6 @@ public class HPAStarTesterWnd {
 		Arrays.fill(players, true);
 
 		MainGrid grid = map.loadMainGrid(players).getMainGrid();
-		return new HPAStarBaseGrid(new MainGridDataAccessor(grid));
+		return new HPAStarTestGrid(new MainGridDataAccessor(grid));
 	}
 }

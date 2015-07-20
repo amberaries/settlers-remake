@@ -3,7 +3,7 @@ package jsettlers.algorithms.path.hpastar;
 import java.util.Random;
 
 import jsettlers.algorithms.path.astar.IAStarPathMap;
-import jsettlers.algorithms.path.dijkstra.DijkstraGrid;
+import jsettlers.algorithms.path.hpastar.graph.generation.HPAStarFactoryGrid;
 import jsettlers.common.Color;
 import jsettlers.common.CommonConstants;
 import jsettlers.common.landscape.ELandscapeType;
@@ -16,20 +16,20 @@ import jsettlers.common.movable.IMovable;
 import jsettlers.logic.map.grid.MainGridDataAccessor;
 import jsettlers.logic.map.grid.flags.FlagsGrid;
 
-public class HPAStarBaseGrid extends DijkstraGrid {
+public class HPAStarTestGrid extends HPAStarFactoryGrid {
 	private final short width;
 	private final short height;
 	private final boolean[][] blocked;
 	private final int[][] debugColors;
 
-	public HPAStarBaseGrid(int width, int height) {
+	public HPAStarTestGrid(int width, int height) {
 		this.width = (short) width;
 		this.height = (short) height;
 		blocked = new boolean[width][height];
 		debugColors = new int[width][height];
 	}
 
-	public HPAStarBaseGrid(final int width, final int height, float blockedPercentage) {
+	public HPAStarTestGrid(final int width, final int height, float blockedPercentage) {
 		this(width, height);
 
 		Random r = new Random(1234);
@@ -40,7 +40,7 @@ public class HPAStarBaseGrid extends DijkstraGrid {
 		}
 	}
 
-	public HPAStarBaseGrid(MainGridDataAccessor grid) {
+	public HPAStarTestGrid(MainGridDataAccessor grid) {
 		this(grid.getWidth(), grid.getHeight());
 
 		FlagsGrid flagsGrid = grid.getFlagsGrid();
@@ -60,10 +60,11 @@ public class HPAStarBaseGrid extends DijkstraGrid {
 	}
 
 	float getCost(Object requirements, int sx, int sy, int tx, int ty) {
-		return isBlocked(requirements, tx, ty) ? Float.MAX_VALUE : 1;
+		return isBlocked(tx, ty) ? Float.MAX_VALUE : 1;
 	}
 
-	void setDebugColor(int x, int y, Color color) {
+	@Override
+	public void setDebugColor(int x, int y, Color color) {
 		debugColors[x][y] = color == null ? 0 : color.getARGB();
 	}
 
@@ -71,10 +72,12 @@ public class HPAStarBaseGrid extends DijkstraGrid {
 		return 1;
 	}
 
-	boolean isBlocked(Object requirements, int x, int y) {
+	@Override
+	public boolean isBlocked(int x, int y) {
 		return blocked[x][y];
 	}
 
+	@Override
 	public void clearDebugColors() {
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
@@ -88,27 +91,27 @@ public class HPAStarBaseGrid extends DijkstraGrid {
 
 			@Override
 			public void setDebugColor(int x, int y, Color color) {
-				HPAStarBaseGrid.this.setDebugColor(x, y, color);
+				HPAStarTestGrid.this.setDebugColor(x, y, color);
 			}
 
 			@Override
 			public void markAsOpen(int x, int y) {
-				HPAStarBaseGrid.this.setDebugColor(x, y, Color.ORANGE.colorWithAlpha(0.2f));
+				HPAStarTestGrid.this.setDebugColor(x, y, Color.ORANGE.colorWithAlpha(0.2f));
 			}
 
 			@Override
 			public void markAsClosed(int x, int y) {
-				HPAStarBaseGrid.this.setDebugColor(x, y, Color.RED.colorWithAlpha(0.2f));
+				HPAStarTestGrid.this.setDebugColor(x, y, Color.RED.colorWithAlpha(0.2f));
 			}
 
 			@Override
 			public boolean isBlocked(Object requirements, int x, int y) {
-				return HPAStarBaseGrid.this.isBlocked(requirements, x, y);
+				return HPAStarTestGrid.this.isBlocked(x, y);
 			}
 
 			@Override
 			public float getCost(int sx, int sy, int tx, int ty) {
-				return HPAStarBaseGrid.this.getCost(null, sx, sy, tx, ty);
+				return HPAStarTestGrid.this.getCost(null, sx, sy, tx, ty);
 			}
 
 			@Override
