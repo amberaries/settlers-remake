@@ -125,7 +125,7 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 								depthParentHeap[getDepthIdx(flatNeighborIdx)] = depthParentHeap[getDepthIdx(currFlatIdx)] + 1;
 								depthParentHeap[getParentIdx(flatNeighborIdx)] = currFlatIdx;
 
-								int heuristicCosts = getHeuristicCost(neighborX, neighborY, tx, ty);
+								int heuristicCosts = Heuristics.getHexGridNoObstaclesDistance(neighborX, neighborY, tx, ty);
 								open.increasedPriority(flatNeighborIdx, oldCosts + heuristicCosts, newCosts + heuristicCosts);
 							}
 
@@ -134,7 +134,7 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 							depthParentHeap[getDepthIdx(flatNeighborIdx)] = depthParentHeap[getDepthIdx(currFlatIdx)] + 1;
 							depthParentHeap[getParentIdx(flatNeighborIdx)] = currFlatIdx;
 							openBitSet.set(flatNeighborIdx);
-							open.insert(flatNeighborIdx, newCosts + getHeuristicCost(neighborX, neighborY, tx, ty));
+							open.insert(flatNeighborIdx, newCosts + Heuristics.getHexGridNoObstaclesDistance(neighborX, neighborY, tx, ty));
 
 							map.markAsOpen(neighborX, neighborY);
 						}
@@ -176,7 +176,7 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 		depthParentHeap[getParentIdx(flatIdx)] = -1;
 		costs[flatIdx] = 0;
 
-		open.insert(flatIdx, 0 + getHeuristicCost(sx, sy, tx, ty));
+		open.insert(flatIdx, 0 + Heuristics.getHexGridNoObstaclesDistance(sx, sy, tx, ty));
 		openBitSet.set(flatIdx);
 	}
 
@@ -198,22 +198,5 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 
 	private final int getY(int flatIdx) {
 		return flatIdx / width;
-	}
-
-	private final int getHeuristicCost(final int sx, final int sy, final int tx, final int ty) {
-		final int dx = (tx - sx);
-		final int dy = (ty - sy);
-		final int absDx = Math.abs(dx);
-		final int absDy = Math.abs(dy);
-
-		if (dx * dy > 0) { // dx and dy go in the same direction
-			if (absDx > absDy) {
-				return absDx;
-			} else {
-				return absDy;
-			}
-		} else {
-			return absDx + absDy;
-		}
 	}
 }

@@ -23,9 +23,5 @@ public abstract class HPAStarFactoryGrid extends DijkstraGrid {
 
 	public abstract void setDebugColor(int x, int y, Color color);
 
-	public boolean isBlocked(int x, int y) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
+	public abstract boolean isBlocked(int x, int y);
 }

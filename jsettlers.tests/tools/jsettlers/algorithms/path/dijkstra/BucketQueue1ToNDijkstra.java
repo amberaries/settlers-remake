@@ -29,20 +29,20 @@ import jsettlers.common.utils.Tuple;
  * @author Andreas Eberle
  * 
  */
-public final class BucketQueue1ToNDijkstra {
-	private static final byte[] xDeltaArray = EDirection.DIRECTION_DELTAS_X;
-	private static final byte[] yDeltaArray = EDirection.DIRECTION_DELTAS_Y;
+public class BucketQueue1ToNDijkstra {
+	protected static final byte[] xDeltaArray = EDirection.DIRECTION_DELTAS_X;
+	protected static final byte[] yDeltaArray = EDirection.DIRECTION_DELTAS_Y;
 
-	private final DijkstraGrid map;
+	protected final DijkstraGrid map;
 
-	private final short width;
+	protected final short width;
 
-	private final BitSet openBitSet;
-	private final BitSet closedBitSet;
+	protected final BitSet openBitSet;
+	protected final BitSet closedBitSet;
 
-	private final float[] costs;
+	protected final float[] costs;
 
-	private final AbstractMinBucketQueue open;
+	protected final AbstractMinBucketQueue open;
 
 	public BucketQueue1ToNDijkstra(DijkstraGrid map, short width, short height) {
 		this.map = map;
@@ -57,9 +57,7 @@ public final class BucketQueue1ToNDijkstra {
 
 	public final Tuple<Integer, float[]> calculateCosts(final ShortPoint2D minCorner, final ShortPoint2D maxCorner, final ShortPoint2D start,
 			final List<? extends ShortPoint2D> targets) {
-		closedBitSet.clear();
-		openBitSet.clear();
-		open.clear();
+		clearState();
 
 		initStartNode(start);
 
@@ -136,15 +134,21 @@ public final class BucketQueue1ToNDijkstra {
 		openBitSet.set(flatIdx);
 	}
 
-	private final int getFlatIdx(int x, int y) {
+	protected final int getFlatIdx(int x, int y) {
 		return y * width + x;
 	}
 
-	private final int getX(int flatIdx) {
+	protected final int getX(int flatIdx) {
 		return flatIdx % width;
 	}
 
-	private final int getY(int flatIdx) {
+	protected final int getY(int flatIdx) {
 		return flatIdx / width;
+	}
+
+	public void clearState() {
+		closedBitSet.clear();
+		openBitSet.clear();
+		open.clear();
 	}
 }

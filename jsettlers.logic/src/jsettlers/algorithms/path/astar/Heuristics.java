@@ -12,16 +12,26 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *******************************************************************************/
-package jsettlers.algorithms.path.dijkstra;
+ package jsettlers.algorithms.path.astar;
 
-public abstract class DijkstraGrid {
+public final class Heuristics {
+	private Heuristics() { // no objects of this class
+	}
 
-	public abstract float getCost(int sx, int sy, int tx, int ty);
-
-	public abstract void markAsClosed(int x, int y);
-
-	public abstract void markAsOpen(int x, int y);
-
-	public abstract void clearDebugColors();
-
+	public static int getHexGridNoObstaclesDistance(final int sx, final int sy, final int tx, final int ty) {
+		final int dx = (tx - sx);
+		final int dy = (ty - sy);
+		final int absDx = Math.abs(dx);
+		final int absDy = Math.abs(dy);
+	
+		if (dx * dy > 0) { // dx and dy go in the same direction
+			if (absDx > absDy) {
+				return absDx;
+			} else {
+				return absDy;
+			}
+		} else {
+			return absDx + absDy;
+		}
+	}
 }

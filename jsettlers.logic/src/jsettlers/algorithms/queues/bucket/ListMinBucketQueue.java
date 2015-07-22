@@ -29,7 +29,7 @@ public final class ListMinBucketQueue extends AbstractMinBucketQueue {
 	/**
 	 * NOTE: The number of buckets MUST BE a power of 2!!
 	 */
-	public static final int NUMBER_OF_BUCKETS = 4;
+	public static final int NUMBER_OF_BUCKETS = 64;
 	private static final int MODULO_MASK = NUMBER_OF_BUCKETS - 1;
 
 	private final DoubleLinkedList<DoubleLinkedIntListItem>[] buckets;

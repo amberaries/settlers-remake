@@ -31,4 +31,12 @@ public class Vertex extends ShortPoint2D {
 		this.neighbors = neighbors;
 		this.costs = costs;
 	}
+
+	public float[] getCosts() {
+		return costs;
+	}
+
+	public Vertex[] getNeighbors() {
+		return neighbors;
+	}
 }

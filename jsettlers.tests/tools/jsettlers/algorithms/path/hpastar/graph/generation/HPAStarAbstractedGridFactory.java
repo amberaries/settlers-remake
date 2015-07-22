@@ -62,6 +62,7 @@ public class HPAStarAbstractedGridFactory {
 		BucketQueue1ToNDijkstra dijkstra = new BucketQueue1ToNDijkstra(grid, width, height);
 
 		HashMap<ShortPoint2D, List<Vertex>> vertexGrid = new HashMap<>();
+		HashMap<ShortPoint2D, Vertex> vertices = new HashMap<>();
 
 		for (Entry<ShortPoint2D, List<Transition>> cell : cells.entrySet()) {
 			List<Vertex> vertexList = new ArrayList<Vertex>();
@@ -76,7 +77,7 @@ public class HPAStarAbstractedGridFactory {
 
 				Tuple<Integer, float[]> dijkstraResult = dijkstra.calculateCosts(minCorner, maxCorner, transition, cellTransitions);
 
-				float[] costs = new float[dijkstraResult.e1 + transition.getNeighbors().size()];
+				float[] costs = new float[dijkstraResult.e1 + transition.getNeighbors().size() - 1]; // -1 as own position can be excluded
 				Vertex[] neighbors = new Vertex[costs.length];
 
 				int idx = 0;
@@ -99,9 +100,10 @@ public class HPAStarAbstractedGridFactory {
 				Vertex vertex = transition.getVertex();
 				vertex.setNeighbors(neighbors, costs);
 				vertexList.add(vertex);
+				vertices.put(vertex, vertex);
 			}
 		}
-		return new HPAStarAbstractedGrid(vertexGrid);
+		return new HPAStarAbstractedGrid(vertexGrid, vertices, cellSize);
 	}
 
 	private HashMap<ShortPoint2D, List<Transition>> calculateCells(HashMap<ShortPoint2D, Transition> transitions, int cellSize) {
