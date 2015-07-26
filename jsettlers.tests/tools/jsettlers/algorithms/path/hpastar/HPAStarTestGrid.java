@@ -29,18 +29,21 @@ import jsettlers.common.mapobject.IMapObject;
 import jsettlers.common.movable.IMovable;
 import jsettlers.logic.map.grid.MainGridDataAccessor;
 import jsettlers.logic.map.grid.flags.FlagsGrid;
+import jsettlers.logic.map.grid.landscape.LandscapeGrid;
 
 public class HPAStarTestGrid extends HPAStarFactoryGrid {
 	private final short width;
 	private final short height;
 	private final boolean[][] blocked;
 	private final int[][] debugColors;
+	private final short[][] blockedPartition;
 
 	public HPAStarTestGrid(int width, int height) {
 		this.width = (short) width;
 		this.height = (short) height;
 		blocked = new boolean[width][height];
 		debugColors = new int[width][height];
+		blockedPartition = new short[width][height];
 	}
 
 	public HPAStarTestGrid(final int width, final int height, float blockedPercentage) {
@@ -51,6 +54,7 @@ public class HPAStarTestGrid extends HPAStarFactoryGrid {
 			int x = r.nextInt(width);
 			int y = r.nextInt(height);
 			blocked[x][y] = true;
+			blockedPartition[x][y] = 1;
 		}
 	}
 
@@ -58,9 +62,11 @@ public class HPAStarTestGrid extends HPAStarFactoryGrid {
 		this(grid.getWidth(), grid.getHeight());
 
 		FlagsGrid flagsGrid = grid.getFlagsGrid();
+		LandscapeGrid landscapeGrid = grid.getLandscapeGrid();
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
 				blocked[x][y] = flagsGrid.isBlocked(x, y);
+				blockedPartition[x][y] = landscapeGrid.getBlockedPartitionAt(x, y);
 			}
 		}
 	}
@@ -83,7 +89,7 @@ public class HPAStarTestGrid extends HPAStarFactoryGrid {
 	}
 
 	short getBlockedPartition(int x, int y) {
-		return 1;
+		return blockedPartition[x][y];
 	}
 
 	@Override

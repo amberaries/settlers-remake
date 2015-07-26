@@ -20,17 +20,17 @@ import jsettlers.common.utils.collections.list.DoubleLinkedList;
  * This class implements a minimum bucket priority queue with double liked lists.
  * <p />
  * {@link #insert(int, float)}, {@link #increasedPriority(int, float, float)}, {@link #size()} and {@link #isEmpty()} are in O(1)<br>
- * {@link #clear()} and {@link #deleteMin()} are in O({@link #NUMBER_OF_BUCKETS}) = O({@value #NUMBER_OF_BUCKETS}) that's actually a constant value.
+ * {@link #clear()} and {@link #deleteMin()} are in O({@link #numberOfBuckets}) = O({@value #numberOfBuckets}) that's actually a constant value.
  * 
  * @author Andreas Eberle
  * 
  */
-public final class ListMinBucketQueue extends AbstractMinBucketQueue {
+public final class FlexibleListMinBucketQueue extends AbstractMinBucketQueue {
 	/**
 	 * NOTE: The number of buckets MUST BE a power of 2!!
 	 */
-	public static final int NUMBER_OF_BUCKETS = 1024;
-	private static final int MODULO_MASK = NUMBER_OF_BUCKETS - 1;
+	private final int numberOfBuckets;
+	private final int moduloMask;
 
 	private final DoubleLinkedList<DoubleLinkedIntListItem>[] buckets;
 	private final DoubleLinkedIntListItem[] handles;
@@ -38,13 +38,16 @@ public final class ListMinBucketQueue extends AbstractMinBucketQueue {
 	private int minIdx = 0;
 	private int size = 0;
 
-	public ListMinBucketQueue(int maxNumberOfIds) {
-		this.buckets = DoubleLinkedList.getArray(NUMBER_OF_BUCKETS);
+	public FlexibleListMinBucketQueue(int maxNumberOfIds, int numberOfBuckets) {
+		this.buckets = DoubleLinkedList.getArray(numberOfBuckets);
 
 		this.handles = new DoubleLinkedIntListItem[maxNumberOfIds];
 		for (int i = 0; i < maxNumberOfIds; i++) {
 			handles[i] = new DoubleLinkedIntListItem(i);
 		}
+
+		this.numberOfBuckets = Integer.highestOneBit(numberOfBuckets - 1) * 2;
+		moduloMask = this.numberOfBuckets - 1;
 	}
 
 	@Override
@@ -53,8 +56,8 @@ public final class ListMinBucketQueue extends AbstractMinBucketQueue {
 		size++;
 	}
 
-	private static final int getRankIdx(float rank) {
-		return ((int) rank) & MODULO_MASK;
+	private final int getRankIdx(float rank) {
+		return ((int) rank) & moduloMask;
 	}
 
 	@Override
@@ -69,7 +72,7 @@ public final class ListMinBucketQueue extends AbstractMinBucketQueue {
 
 	@Override
 	public void clear() {
-		for (int i = 0; i < NUMBER_OF_BUCKETS; i++) {
+		for (int i = 0; i < numberOfBuckets; i++) {
 			this.buckets[i].clear();
 		}
 
@@ -80,7 +83,7 @@ public final class ListMinBucketQueue extends AbstractMinBucketQueue {
 	@Override
 	public int deleteMin() {
 		while (buckets[minIdx].isEmpty()) {
-			minIdx = (minIdx + 1) & MODULO_MASK;
+			minIdx = (minIdx + 1) & moduloMask;
 		}
 		size--;
 

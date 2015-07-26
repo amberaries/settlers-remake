@@ -37,8 +37,8 @@ import jsettlers.network.synchronic.timer.NetworkTimer;
 
 public class HPAStarTesterWnd {
 
-	private static final boolean RANDOM_MAP = true;
-	private static final int CELL_SIZE = 10;
+	private static final boolean RANDOM_MAP = false;
+	private static final int CELL_SIZE = 16;
 
 	public static void main(String args[]) throws MapLoadException {
 		final HPAStarTestGrid grid;
@@ -53,45 +53,16 @@ public class HPAStarTesterWnd {
 		connector.scrollTo(new ShortPoint2D(25, 25), false);
 		connector.fireAction(new Action(EActionType.TOGGLE_DEBUG));
 
-		// connector.addListener(new IMapInterfaceListener() {
-		// ShortPoint2D start;
-		//
-		//
-		// @Override
-		// public void action(Action action) {
-		// switch (action.getActionType()) {
-		// case SELECT_POINT:
-		// start = ((PointAction) action).getPosition();
-		// break;
-		//
-		// case MOVE_TO:
-		// if (start == null)
-		// break;
-		//
-		// grid.clearDebugColors();
-		// ShortPoint2D target = ((PointAction) action).getPosition();
-		// Path path = aStar.findPath(null, start.x, start.y, target.x, target.y);
-		// while (path != null && path.hasNextStep()) {
-		// grid.setDebugColor(path.nextX(), path.nextY(), Color.BLUE);
-		// path.goToNextStep();
-		// }
-		// break;
-		//
-		// default:
-		// break;
-		// }
-		// }
-		// });
-
+		System.out.println("starting calculation of hpaStar grid...");
 		MilliStopWatch watch = new MilliStopWatch();
 		HPAStarAbstractedGridFactory hpaStarGridFactory = new HPAStarAbstractedGridFactory(grid, grid.getWidth(), grid.getHeight());
 		HPAStarAbstractedGrid abstractedGrid = hpaStarGridFactory.calculateAbstractedGrid(CELL_SIZE);
-		watch.stop("calculating abstracted grid needed");
+		watch.stop("calculating abstracted grid (cellSize=" + CELL_SIZE + ") needed");
 
 		// calculate path
 		BucketQueueAStar<Object> aStar = new BucketQueueAStar<Object>(grid.getAStarMap(), grid.getWidth(), grid.getHeight());
 		HPAStar hpaStar = new HPAStar(abstractedGrid, grid, grid.getWidth(), grid.getHeight());
-		hpaStar.findPath((short) 15, (short) 39, (short) 18, (short) 33);
+		// hpaStar.findPath((short) 15, (short) 39, (short) 18, (short) 33);
 
 		grid.clearDebugColors();
 		benchmark(grid, hpaStar, aStar);
@@ -114,7 +85,7 @@ public class HPAStarTesterWnd {
 				short tx = (short) r.nextInt(grid.getWidth());
 				short ty = (short) r.nextInt(grid.getHeight());
 
-				if (!grid.isBlocked(sx, sy) && !grid.isBlocked(tx, ty)) {
+				if (!grid.isBlocked(sx, sy) && !grid.isBlocked(tx, ty) && grid.getBlockedPartition(sx, sy) == grid.getBlockedPartition(tx, ty)) {
 					aStar.findPath(null, sx, sy, tx, ty);
 				} else {
 					i--;
@@ -132,7 +103,7 @@ public class HPAStarTesterWnd {
 				short tx = (short) r.nextInt(grid.getWidth());
 				short ty = (short) r.nextInt(grid.getHeight());
 
-				if (!grid.isBlocked(sx, sy) && !grid.isBlocked(tx, ty)) {
+				if (!grid.isBlocked(sx, sy) && !grid.isBlocked(tx, ty) && grid.getBlockedPartition(sx, sy) == grid.getBlockedPartition(tx, ty)) {
 					hpaStar.findPath(sx, sy, tx, ty);
 				} else {
 					i--;

@@ -18,7 +18,7 @@ import java.util.BitSet;
 import java.util.List;
 
 import jsettlers.algorithms.queues.bucket.AbstractMinBucketQueue;
-import jsettlers.algorithms.queues.bucket.ListMinBucketQueue;
+import jsettlers.algorithms.queues.bucket.FlexibleListMinBucketQueue;
 import jsettlers.common.Color;
 import jsettlers.common.movable.EDirection;
 import jsettlers.common.position.ShortPoint2D;
@@ -52,7 +52,7 @@ public class BucketQueue1ToNDijkstra {
 		this.map = map;
 		this.width = width;
 
-		this.open = new ListMinBucketQueue(width * height);
+		this.open = new FlexibleListMinBucketQueue(width * height, 1024);
 
 		this.openBitSet = new BitSet(width * height);
 		this.closedBitSet = new BitSet(width * height);
