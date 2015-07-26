@@ -59,7 +59,8 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 		// init first vertices
 		initStartNodes(sx, sy, tx, ty);
 
-		// mark target (for debugging)
+		// mark target and star (for debugging)
+		map.setDebugColor(sx, sy, Color.CYAN);
 		map.setDebugColor(tx, ty, Color.BLUE);
 
 		// run astar
@@ -78,8 +79,10 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 
 			ShortPoint2D cell = abstractedGrid.getCell(x, y); // current vertex is part of target cell
 			if (cell.equals(targetCell)) {
-				float targetCosts = vertexToTargetCosts.get(position);
-				exploreVertex(tx, ty, targetCosts, flatIndex, tx, ty);
+				Float targetCosts = vertexToTargetCosts.get(position);
+				if (targetCosts != null) { // if there exstis a path
+					exploreVertex(tx, ty, getFlatIdx(tx, ty), targetCosts, flatIndex, tx, ty);
+				}
 			}
 
 			// insert neighbors of current vertex
@@ -89,8 +92,12 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 
 			for (int i = 0; i < neighbors.length; i++) {
 				Vertex neighbor = neighbors[i];
-				float neighborCost = neighborCosts[i];
-				exploreVertex(neighbor.x, neighbor.y, neighborCost, flatIndex, tx, ty);
+				int flatNeighborIndex = getFlatIdx(neighbor.x, neighbor.y);
+
+				if (!closedBitSet.get(flatNeighborIndex)) {
+					float neighborCost = neighborCosts[i];
+					exploreVertex(neighbor.x, neighbor.y, flatNeighborIndex, neighborCost, flatIndex, tx, ty);
+				}
 			}
 		}
 
@@ -100,7 +107,6 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 	private void initStartNodes(short sx, short sy, short tx, short ty) {
 		// make actual start node closed
 		int flatStartIndex = getFlatIdx(sx, sy);
-		openBitSet.set(flatStartIndex);
 		closedBitSet.set(flatStartIndex);
 		depthParentHeap[getParentIdx(flatStartIndex)] = -1;
 
@@ -114,6 +120,7 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 			startCellVertices = abstractedGrid.getCellVertices(startCell);
 			startCellCosts = super.calculateCosts(abstractedGrid.getMinCorner(startCell), abstractedGrid.getMaxCorner(startCell),
 					new ShortPoint2D(sx, sy), startCellVertices).e2;
+			super.clearState();
 		} else {
 			startCellVertices = Arrays.asList(startVertex.getNeighbors());
 			startCellCosts = startVertex.getCosts();
@@ -123,12 +130,19 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 
 		int index = 0;
 		for (Vertex neighbor : startCellVertices) {
-			int flatIndex = getFlatIdx(neighbor.x, neighbor.y);
-			costs[flatIndex] = startCellCosts[index];
+			final int flatIndex = getFlatIdx(neighbor.x, neighbor.y);
+			final float cost = startCellCosts[index];
+			if (cost <= 0) {
+				continue;
+			}
+
+			costs[flatIndex] = cost;
 			depthParentHeap[getDepthIdx(flatIndex)] = 1;
 			depthParentHeap[getParentIdx(flatIndex)] = flatStartIndex;
 			openBitSet.set(flatIndex);
-			open.insert(flatIndex, startCellCosts[index] + Heuristics.getHexGridNoObstaclesDistance(neighbor.x, neighbor.y, tx, ty));
+			float costsWithHeuristic = cost + Heuristics.getHexGridNoObstaclesDistance(neighbor.x, neighbor.y, tx, ty);
+			// System.out.println(neighbor + ": " + costsWithHeuristic);
+			open.insert(flatIndex, costsWithHeuristic);
 
 			map.setDebugColor(neighbor.x, neighbor.y, OPEN_COLOR);
 			index++;
@@ -136,28 +150,27 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 
 	}
 
-	private void exploreVertex(short neighborX, short neighborY, float neighborCost, int parentFlatIndex, short tx, short ty) {
+	private void exploreVertex(short x, short y, int flatIndex, float neighborCost, int parentFlatIndex, short tx, short ty) {
 		float newCosts = costs[parentFlatIndex] + neighborCost;
-		int flatNeighborIndex = getFlatIdx(neighborX, neighborY);
 
-		if (openBitSet.get(flatNeighborIndex)) { // check if new path better
-			float oldCosts = costs[flatNeighborIndex];
+		if (openBitSet.get(flatIndex)) { // check if new path better
+			float oldCosts = costs[flatIndex];
 			if (oldCosts > newCosts) { // update path
-				costs[flatNeighborIndex] = newCosts;
-				depthParentHeap[getDepthIdx(flatNeighborIndex)] = depthParentHeap[getDepthIdx(parentFlatIndex)] + 1;
-				depthParentHeap[getParentIdx(flatNeighborIndex)] = parentFlatIndex;
+				costs[flatIndex] = newCosts;
+				depthParentHeap[getDepthIdx(flatIndex)] = depthParentHeap[getDepthIdx(parentFlatIndex)] + 1;
+				depthParentHeap[getParentIdx(flatIndex)] = parentFlatIndex;
 
-				int heuristicCosts = Heuristics.getHexGridNoObstaclesDistance(neighborX, neighborY, tx, ty);
-				open.increasedPriority(flatNeighborIndex, oldCosts + heuristicCosts, newCosts + heuristicCosts);
+				int heuristicCosts = Heuristics.getHexGridNoObstaclesDistance(x, y, tx, ty);
+				open.increasedPriority(flatIndex, oldCosts + heuristicCosts, newCosts + heuristicCosts);
 			}
 		} else {
-			costs[flatNeighborIndex] = newCosts;
-			depthParentHeap[getDepthIdx(flatNeighborIndex)] = depthParentHeap[getDepthIdx(parentFlatIndex)] + 1;
-			depthParentHeap[getParentIdx(flatNeighborIndex)] = parentFlatIndex;
-			openBitSet.set(flatNeighborIndex);
-			open.insert(flatNeighborIndex, newCosts + Heuristics.getHexGridNoObstaclesDistance(neighborX, neighborY, tx, ty));
+			costs[flatIndex] = newCosts;
+			depthParentHeap[getDepthIdx(flatIndex)] = depthParentHeap[getDepthIdx(parentFlatIndex)] + 1;
+			depthParentHeap[getParentIdx(flatIndex)] = parentFlatIndex;
+			openBitSet.set(flatIndex);
+			open.insert(flatIndex, newCosts + Heuristics.getHexGridNoObstaclesDistance(x, y, tx, ty));
 
-			map.setDebugColor(neighborX, neighborY, OPEN_COLOR);
+			map.setDebugColor(x, y, OPEN_COLOR);
 		}
 	}
 
@@ -168,7 +181,10 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 		HashMap<ShortPoint2D, Float> vertexToTargetCosts = new HashMap<>();
 		int index = 0;
 		for (Vertex v : targetCellVertices) {
-			vertexToTargetCosts.put(v, targetCellCosts[index++]);
+			float targetCost = targetCellCosts[index++];
+			if (targetCost > 0) { // only add vertex if path to target exists
+				vertexToTargetCosts.put(v, targetCost);
+			}
 		}
 		return vertexToTargetCosts;
 	}

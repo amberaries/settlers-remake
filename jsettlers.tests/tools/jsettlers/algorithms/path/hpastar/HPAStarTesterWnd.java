@@ -91,10 +91,10 @@ public class HPAStarTesterWnd {
 		// calculate path
 		BucketQueueAStar<Object> aStar = new BucketQueueAStar<Object>(grid.getAStarMap(), grid.getWidth(), grid.getHeight());
 		HPAStar hpaStar = new HPAStar(abstractedGrid, grid, grid.getWidth(), grid.getHeight());
-		hpaStar.findPath((short) 45, (short) 28, (short) 7, (short) 33);
+		hpaStar.findPath((short) 15, (short) 39, (short) 18, (short) 33);
 
-		// grid.clearDebugColors();
-		// benchmark(grid, hpaStar, aStar);
+		grid.clearDebugColors();
+		benchmark(grid, hpaStar, aStar);
 	}
 
 	private static void benchmark(HPAStarTestGrid grid, HPAStar hpaStar, BucketQueueAStar<Object> aStar) {
