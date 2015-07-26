@@ -14,14 +14,18 @@
  *******************************************************************************/
 package jsettlers.algorithms.path.dijkstra;
 
+import jsettlers.common.Color;
+
+/**
+ * 
+ * @author Andreas Eberle
+ *
+ */
 public abstract class DijkstraGrid {
 
 	public abstract float getCost(int sx, int sy, int tx, int ty);
 
-	public abstract void markAsClosed(int x, int y);
-
-	public abstract void markAsOpen(int x, int y);
-
 	public abstract void clearDebugColors();
 
+	public abstract void setDebugColor(int x, int y, Color color);
 }

@@ -15,8 +15,10 @@
 package jsettlers.algorithms.path.hpastar;
 
 import java.util.Arrays;
+import java.util.Random;
 
 import jsettlers.TestUtils;
+import jsettlers.algorithms.path.astar.BucketQueueAStar;
 import jsettlers.algorithms.path.hpastar.graph.HPAStarAbstractedGrid;
 import jsettlers.algorithms.path.hpastar.graph.generation.HPAStarAbstractedGridFactory;
 import jsettlers.common.logging.MilliStopWatch;
@@ -53,7 +55,7 @@ public class HPAStarTesterWnd {
 
 		// connector.addListener(new IMapInterfaceListener() {
 		// ShortPoint2D start;
-		// BucketQueueAStar aStar = new BucketQueueAStar(grid.getAStarMap(), (short) grid.getWidth(), (short) grid.getHeight());
+		//
 		//
 		// @Override
 		// public void action(Action action) {
@@ -87,8 +89,57 @@ public class HPAStarTesterWnd {
 		watch.stop("calculating abstracted grid needed");
 
 		// calculate path
+		BucketQueueAStar<Object> aStar = new BucketQueueAStar<Object>(grid.getAStarMap(), grid.getWidth(), grid.getHeight());
 		HPAStar hpaStar = new HPAStar(abstractedGrid, grid, grid.getWidth(), grid.getHeight());
-		hpaStar.findPath((short) 15, (short) 15, (short) (grid.getWidth() - 15), (short) (grid.getHeight() - 15));
+		hpaStar.findPath((short) 45, (short) 28, (short) 7, (short) 33);
+
+		// grid.clearDebugColors();
+		// benchmark(grid, hpaStar, aStar);
+	}
+
+	private static void benchmark(HPAStarTestGrid grid, HPAStar hpaStar, BucketQueueAStar<Object> aStar) {
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+		}
+
+		int seed = 1;
+		int paths = 1000;
+		{
+			Random r = new Random(seed);
+			MilliStopWatch watch = new MilliStopWatch();
+			for (int i = 0; i < paths; i++) {
+				short sx = (short) r.nextInt(grid.getWidth());
+				short sy = (short) r.nextInt(grid.getHeight());
+				short tx = (short) r.nextInt(grid.getWidth());
+				short ty = (short) r.nextInt(grid.getHeight());
+
+				if (!grid.isBlocked(sx, sy) && !grid.isBlocked(tx, ty)) {
+					aStar.findPath(null, sx, sy, tx, ty);
+				} else {
+					i--;
+				}
+			}
+			watch.stop("aStar: paths: " + paths + ", seed: " + seed + " needed");
+		}
+
+		{
+			Random r = new Random(seed);
+			MilliStopWatch watch = new MilliStopWatch();
+			for (int i = 0; i < paths; i++) {
+				short sx = (short) r.nextInt(grid.getWidth());
+				short sy = (short) r.nextInt(grid.getHeight());
+				short tx = (short) r.nextInt(grid.getWidth());
+				short ty = (short) r.nextInt(grid.getHeight());
+
+				if (!grid.isBlocked(sx, sy) && !grid.isBlocked(tx, ty)) {
+					hpaStar.findPath(sx, sy, tx, ty);
+				} else {
+					i--;
+				}
+			}
+			watch.stop("hpaStar: paths: " + paths + ", seed: " + seed + " needed");
+		}
 	}
 
 	private static HPAStarTestGrid getGridByMap(String mapName) throws MapLoadException {

@@ -14,6 +14,7 @@
  *******************************************************************************/
 package jsettlers.algorithms.path.hpastar;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -23,6 +24,7 @@ import jsettlers.algorithms.path.dijkstra.DijkstraGrid;
 import jsettlers.algorithms.path.hpastar.graph.HPAStarAbstractedGrid;
 import jsettlers.algorithms.path.hpastar.graph.HPAStarPath;
 import jsettlers.algorithms.path.hpastar.graph.Vertex;
+import jsettlers.common.Color;
 import jsettlers.common.position.ShortPoint2D;
 
 public class HPAStar extends BucketQueue1ToNDijkstra {
@@ -38,39 +40,27 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 	}
 
 	public HPAStarPath findPath(short sx, short sy, short tx, short ty) {
-		final ShortPoint2D startCell = abstractedGrid.getCell(sx, sy);
-
 		map.clearDebugColors();
-		final List<Vertex> startCellVertices = abstractedGrid.getCellVertices(startCell);
-		float[] startCellCosts = super.calculateCosts(abstractedGrid.getMinCorner(startCell), abstractedGrid.getMaxCorner(startCell),
-				new ShortPoint2D(sx, sy), startCellVertices).e2;
 
-		final ShortPoint2D targetCell = abstractedGrid.getCell(tx, ty);
-		HashMap<ShortPoint2D, Float> vertexToTargetCosts = calculateTargetCellCosts(tx, ty, targetCell);
+		boolean targetIsVertex = abstractedGrid.getVertex(new ShortPoint2D(tx, ty)) != null;
 
-		map.clearDebugColors();
+		final ShortPoint2D targetCell;
+		final HashMap<ShortPoint2D, Float> vertexToTargetCosts;
+		if (!targetIsVertex) {
+			targetCell = abstractedGrid.getCell(tx, ty);
+			vertexToTargetCosts = calculateTargetCellCosts(tx, ty, targetCell);
+		} else {
+			targetCell = null;
+			vertexToTargetCosts = null;
+		}
+
 		super.clearState();
 
-		// make actual start node closed
-		int flatStartIndex = getFlatIdx(sx, sy);
-		openBitSet.set(flatStartIndex);
-		closedBitSet.set(flatStartIndex);
-		map.markAsClosed(sx, sy);
-		depthParentHeap[getParentIdx(flatStartIndex)] = -1;
-
 		// init first vertices
-		int index = 0;
-		for (Vertex neighbor : startCellVertices) {
-			int flatIndex = getFlatIdx(neighbor.x, neighbor.y);
-			costs[flatIndex] = startCellCosts[index];
-			depthParentHeap[getDepthIdx(flatIndex)] = 1;
-			depthParentHeap[getParentIdx(flatIndex)] = flatStartIndex;
-			openBitSet.set(flatIndex);
-			open.insert(flatIndex, startCellCosts[index] + Heuristics.getHexGridNoObstaclesDistance(neighbor.x, neighbor.y, tx, ty));
+		initStartNodes(sx, sy, tx, ty);
 
-			map.markAsOpen(neighbor.x, neighbor.y);
-			index++;
-		}
+		// mark target (for debugging)
+		map.setDebugColor(tx, ty, Color.BLUE);
 
 		// run astar
 		while (!open.isEmpty()) {
@@ -80,14 +70,14 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 			ShortPoint2D position = new ShortPoint2D(x, y);
 
 			closedBitSet.set(flatIndex);
-			map.markAsClosed(x, y);
+			map.setDebugColor(x, y, CLOSED_COLOR);
 
 			if (x == tx && y == ty) {
 				break;
 			}
 
 			ShortPoint2D cell = abstractedGrid.getCell(x, y); // current vertex is part of target cell
-			if (targetCell.equals(cell)) {
+			if (cell.equals(targetCell)) {
 				float targetCosts = vertexToTargetCosts.get(position);
 				exploreVertex(tx, ty, targetCosts, flatIndex, tx, ty);
 			}
@@ -105,6 +95,45 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 		}
 
 		return null;
+	}
+
+	private void initStartNodes(short sx, short sy, short tx, short ty) {
+		// make actual start node closed
+		int flatStartIndex = getFlatIdx(sx, sy);
+		openBitSet.set(flatStartIndex);
+		closedBitSet.set(flatStartIndex);
+		depthParentHeap[getParentIdx(flatStartIndex)] = -1;
+
+		// insert neighbors of start node
+		Vertex startVertex = abstractedGrid.getVertex(new ShortPoint2D(sx, sy));
+
+		final List<Vertex> startCellVertices;
+		final float[] startCellCosts;
+		if (startVertex == null) { // start position is not a vertex => calculate costs to vertices of cell
+			final ShortPoint2D startCell = abstractedGrid.getCell(sx, sy);
+			startCellVertices = abstractedGrid.getCellVertices(startCell);
+			startCellCosts = super.calculateCosts(abstractedGrid.getMinCorner(startCell), abstractedGrid.getMaxCorner(startCell),
+					new ShortPoint2D(sx, sy), startCellVertices).e2;
+		} else {
+			startCellVertices = Arrays.asList(startVertex.getNeighbors());
+			startCellCosts = startVertex.getCosts();
+		}
+		map.clearDebugColors();
+		map.setDebugColor(sx, sy, CLOSED_COLOR);
+
+		int index = 0;
+		for (Vertex neighbor : startCellVertices) {
+			int flatIndex = getFlatIdx(neighbor.x, neighbor.y);
+			costs[flatIndex] = startCellCosts[index];
+			depthParentHeap[getDepthIdx(flatIndex)] = 1;
+			depthParentHeap[getParentIdx(flatIndex)] = flatStartIndex;
+			openBitSet.set(flatIndex);
+			open.insert(flatIndex, startCellCosts[index] + Heuristics.getHexGridNoObstaclesDistance(neighbor.x, neighbor.y, tx, ty));
+
+			map.setDebugColor(neighbor.x, neighbor.y, OPEN_COLOR);
+			index++;
+		}
+
 	}
 
 	private void exploreVertex(short neighborX, short neighborY, float neighborCost, int parentFlatIndex, short tx, short ty) {
@@ -128,7 +157,7 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 			openBitSet.set(flatNeighborIndex);
 			open.insert(flatNeighborIndex, newCosts + Heuristics.getHexGridNoObstaclesDistance(neighborX, neighborY, tx, ty));
 
-			map.markAsOpen(neighborX, neighborY);
+			map.setDebugColor(neighborX, neighborY, OPEN_COLOR);
 		}
 	}
 

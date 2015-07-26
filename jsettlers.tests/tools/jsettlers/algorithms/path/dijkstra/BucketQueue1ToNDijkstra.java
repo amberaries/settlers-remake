@@ -19,6 +19,7 @@ import java.util.List;
 
 import jsettlers.algorithms.queues.bucket.AbstractMinBucketQueue;
 import jsettlers.algorithms.queues.bucket.ListMinBucketQueue;
+import jsettlers.common.Color;
 import jsettlers.common.movable.EDirection;
 import jsettlers.common.position.ShortPoint2D;
 import jsettlers.common.utils.Tuple;
@@ -30,6 +31,9 @@ import jsettlers.common.utils.Tuple;
  * 
  */
 public class BucketQueue1ToNDijkstra {
+	protected static final Color CLOSED_COLOR = Color.RED;
+	protected static final Color OPEN_COLOR = Color.ORANGE;
+
 	protected static final byte[] xDeltaArray = EDirection.DIRECTION_DELTAS_X;
 	protected static final byte[] yDeltaArray = EDirection.DIRECTION_DELTAS_Y;
 
@@ -69,7 +73,7 @@ public class BucketQueue1ToNDijkstra {
 
 			// close current position
 			closedBitSet.set(currFlatIdx);
-			map.markAsClosed(x, y);
+			map.setDebugColor(x, y, CLOSED_COLOR);
 
 			// explore neighbors
 			final float currPositionCosts = costs[currFlatIdx];
@@ -103,7 +107,7 @@ public class BucketQueue1ToNDijkstra {
 							openBitSet.set(flatNeighborIdx);
 							open.insert(flatNeighborIdx, newCosts);
 
-							map.markAsOpen(neighborX, neighborY);
+							map.setDebugColor(neighborX, neighborY, OPEN_COLOR);
 						}
 					}
 				}

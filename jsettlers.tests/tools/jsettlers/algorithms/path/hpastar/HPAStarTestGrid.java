@@ -209,15 +209,4 @@ public class HPAStarTestGrid extends HPAStarFactoryGrid {
 	public float getCost(int sx, int sy, int tx, int ty) {
 		return getCost(null, sx, sy, tx, ty);
 	}
-
-	@Override
-	public void markAsClosed(int x, int y) {
-		setDebugColor(x, y, Color.RED);
-	}
-
-	@Override
-	public void markAsOpen(int x, int y) {
-		setDebugColor(x, y, Color.ORANGE);
-	}
-
 }
