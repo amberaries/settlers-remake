@@ -14,129 +14,36 @@
  *******************************************************************************/
 package jsettlers.algorithms.path.hpastar.graph.generation;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map.Entry;
 
-import jsettlers.algorithms.path.dijkstra.BucketQueue1ToNDijkstra;
-import jsettlers.algorithms.path.hpastar.graph.HPAStarAbstractedGrid;
-import jsettlers.algorithms.path.hpastar.graph.Vertex;
 import jsettlers.common.Color;
-import jsettlers.common.logging.MilliStopWatch;
 import jsettlers.common.position.ShortPoint2D;
-import jsettlers.common.utils.Tuple;
 
-public class HPAStarAbstractedGridFactory {
+public class SparseTransitionsCalculator extends TransitionsCalculator {
+	public static class SparseTransitionsCalculatorFactory extends TransitionCalculatorFactory {
+		@Override
+		public TransitionsCalculator createCalculator(HPAStarFactoryGrid grid, short width, short height) {
+			return new SparseTransitionsCalculator(grid, width, height);
+		}
+	}
 
 	private final HPAStarFactoryGrid grid;
 	private final short width;
 	private final short height;
 
-	public HPAStarAbstractedGridFactory(HPAStarFactoryGrid grid, short width, short height) {
+	public SparseTransitionsCalculator(HPAStarFactoryGrid grid, short width, short height) {
 		this.grid = grid;
 		this.width = width;
 		this.height = height;
 	}
 
-	public HPAStarAbstractedGrid calculateAbstractedGrid(int cellSize) {
+	@Override
+	public HashMap<ShortPoint2D, Transition> calculateTransitions(int cellSize) {
 		HashMap<ShortPoint2D, Transition> transitions = new HashMap<>();
 
 		xCalculateTransitions(cellSize, transitions);
 		yCalculateTransitions(cellSize, transitions);
-
-		// printCell(transitions, cellSize, 2, 3);
-
-		System.out.println("number of transitions: " + transitions.size());
-
-		HashMap<ShortPoint2D, List<Transition>> cells = calculateCells(transitions, cellSize);
-
-		MilliStopWatch watch = new MilliStopWatch();
-		HPAStarAbstractedGrid abstractedGrid = calculateAbstractedGrid(cellSize, cells);
-		watch.stop("costs calculation took");
-
-		return abstractedGrid;
-	}
-
-	private HPAStarAbstractedGrid calculateAbstractedGrid(int cellSize, HashMap<ShortPoint2D, List<Transition>> cells) {
-		BucketQueue1ToNDijkstra dijkstra = new BucketQueue1ToNDijkstra(grid, width, height);
-
-		HashMap<ShortPoint2D, List<Vertex>> vertexGrid = new HashMap<>();
-		HashMap<ShortPoint2D, Vertex> vertices = new HashMap<>();
-
-		for (Entry<ShortPoint2D, List<Transition>> cell : cells.entrySet()) {
-			List<Vertex> vertexList = new ArrayList<Vertex>();
-			vertexGrid.put(cell.getKey(), vertexList);
-
-			ShortPoint2D minCorner = cell.getKey().multiply(cellSize);
-			ShortPoint2D maxCorner = minCorner.add(cellSize - 1);
-
-			List<Transition> cellTransitions = cell.getValue();
-			for (Transition transition : cellTransitions) {
-				grid.clearDebugColors();
-
-				Tuple<Integer, float[]> dijkstraResult = dijkstra.calculateCosts(minCorner, maxCorner, transition, cellTransitions);
-
-				float[] costs = new float[dijkstraResult.e1 + transition.getNeighbors().size() - 1]; // -1 as own position can be excluded
-				Vertex[] neighbors = new Vertex[costs.length];
-
-				int idx = 0;
-				float[] dijkstraCosts = dijkstraResult.e2;
-
-				for (int i = 0; i < dijkstraCosts.length; i++) {
-					if (dijkstraCosts[i] > 0) {
-						costs[idx] = dijkstraCosts[i];
-						neighbors[idx] = cellTransitions.get(i).getVertex();
-						idx++;
-					}
-				}
-
-				for (Transition neighbor : transition.getNeighbors()) {
-					costs[idx] = grid.getCost(transition.x, transition.y, neighbor.x, neighbor.y);
-					neighbors[idx] = neighbor.getVertex();
-					idx++;
-				}
-
-				Vertex vertex = transition.getVertex();
-				vertex.setNeighbors(neighbors, costs);
-				vertexList.add(vertex);
-				vertices.put(vertex, vertex);
-			}
-		}
-		return new HPAStarAbstractedGrid(vertexGrid, vertices, cellSize);
-	}
-
-	private HashMap<ShortPoint2D, List<Transition>> calculateCells(HashMap<ShortPoint2D, Transition> transitions, int cellSize) {
-		HashMap<ShortPoint2D, List<Transition>> cells = new HashMap<>();
-
-		for (Entry<ShortPoint2D, Transition> transition : transitions.entrySet()) {
-			int cellX = transition.getKey().x / cellSize;
-			int cellY = transition.getKey().y / cellSize;
-
-			ShortPoint2D cellPosition = new ShortPoint2D(cellX, cellY);
-			List<Transition> cellTransitions = cells.get(cellPosition);
-			if (cellTransitions == null) {
-				cellTransitions = new ArrayList<Transition>();
-				cells.put(cellPosition, cellTransitions);
-			}
-			cellTransitions.add(transition.getValue());
-		}
-
-		return cells;
-	}
-
-	private void printCell(HashMap<ShortPoint2D, Transition> transitions, int cellSize, int cellX, int cellY) {
-		grid.clearDebugColors();
-
-		for (Entry<ShortPoint2D, Transition> vertexEntry : transitions.entrySet()) {
-			Transition vertex = vertexEntry.getValue();
-			if (vertex.x / cellSize == cellX && vertex.y / cellSize == cellY) {
-				grid.setDebugColor(vertex.x, vertex.y, Color.ORANGE);
-				for (Transition neighbor : vertex.getNeighbors()) {
-					grid.setDebugColor(neighbor.x, neighbor.y, Color.CYAN);
-				}
-			}
-		}
+		return transitions;
 	}
 
 	// xCalculateTransitions ========================================================================================

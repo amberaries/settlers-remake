@@ -20,7 +20,8 @@ import java.util.Random;
 import jsettlers.TestUtils;
 import jsettlers.algorithms.path.astar.BucketQueueAStar;
 import jsettlers.algorithms.path.hpastar.graph.HPAStarAbstractedGrid;
-import jsettlers.algorithms.path.hpastar.graph.generation.HPAStarAbstractedGridFactory;
+import jsettlers.algorithms.path.hpastar.graph.generation.HPAStarAbstractedGridCalculator;
+import jsettlers.algorithms.path.hpastar.graph.generation.SparseTransitionsCalculator.SparseTransitionsCalculatorFactory;
 import jsettlers.common.logging.MilliStopWatch;
 import jsettlers.common.map.MapLoadException;
 import jsettlers.common.position.ShortPoint2D;
@@ -55,8 +56,9 @@ public class HPAStarTesterWnd {
 
 		System.out.println("starting calculation of hpaStar grid...");
 		MilliStopWatch watch = new MilliStopWatch();
-		HPAStarAbstractedGridFactory hpaStarGridFactory = new HPAStarAbstractedGridFactory(grid, grid.getWidth(), grid.getHeight());
-		HPAStarAbstractedGrid abstractedGrid = hpaStarGridFactory.calculateAbstractedGrid(CELL_SIZE);
+		HPAStarAbstractedGridCalculator hpaStarGridCalculator = new HPAStarAbstractedGridCalculator(grid, grid.getWidth(), grid.getHeight(),
+				new SparseTransitionsCalculatorFactory());
+		HPAStarAbstractedGrid abstractedGrid = hpaStarGridCalculator.calculateAbstractedGrid(CELL_SIZE);
 		watch.stop("calculating abstracted grid (cellSize=" + CELL_SIZE + ") needed");
 
 		// calculate path
