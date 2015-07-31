@@ -31,8 +31,10 @@ public abstract class StopWatch {
 	/**
 	 * saves the current time.
 	 */
-	public final void restart() {
+	public final long restart() {
+		long diff = getDiff();
 		start = now();
+		return diff;
 	}
 
 	/**
@@ -40,9 +42,12 @@ public abstract class StopWatch {
 	 * 
 	 * @param leadingText
 	 *            text to be pretended to the measured difference
+	 * @return measured duration.
 	 */
-	public void stop(String leadingText) {
-		System.out.println(leadingText + ": " + getDiff() + " " + getUnit());
+	public long stop(String leadingText) {
+		long diff = getDiff();
+		System.out.println(leadingText + ": " + diff + " " + getUnit());
+		return diff;
 	}
 
 	protected abstract String getUnit();
