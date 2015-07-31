@@ -88,7 +88,7 @@ public class HPAStarTestGrid extends HPAStarFactoryGrid {
 		debugColors[x][y] = color == null ? 0 : color.getARGB();
 	}
 
-	short getBlockedPartition(int x, int y) {
+	public short getBlockedPartition(int x, int y) {
 		return blockedPartition[x][y];
 	}
 

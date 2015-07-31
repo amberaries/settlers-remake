@@ -14,7 +14,6 @@
  *******************************************************************************/
 package jsettlers.algorithms.path.hpastar;
 
-import java.util.Arrays;
 import java.util.Random;
 
 import jsettlers.TestUtils;
@@ -29,25 +28,20 @@ import jsettlers.common.utils.Tuple;
 import jsettlers.graphics.action.Action;
 import jsettlers.graphics.action.EActionType;
 import jsettlers.graphics.map.MapInterfaceConnector;
-import jsettlers.logic.constants.MatchConstants;
 import jsettlers.logic.map.grid.MainGrid;
 import jsettlers.logic.map.grid.MainGridDataAccessor;
-import jsettlers.logic.map.save.MapList;
-import jsettlers.logic.map.save.loader.MapLoader;
-import jsettlers.network.synchronic.random.RandomSingleton;
-import jsettlers.network.synchronic.timer.NetworkTimer;
 
 public class HPAStarTesterWnd {
 
 	private static final boolean RANDOM_MAP = false;
-	private static final int CELL_SIZE = 128;
+	private static final int CELL_SIZE = 64;
 
 	public static void main(String args[]) throws MapLoadException {
 		final HPAStarTestGrid grid;
 		if (RANDOM_MAP) {
 			grid = new HPAStarTestGrid(60, 60, 1f / 3);
 		} else {
-			grid = getGridByMap("big map");
+			grid = getGridByMapName("big map");
 		}
 
 		MapInterfaceConnector connector = TestUtils.openTestWindow(grid.getGraphicsGrid());
@@ -70,6 +64,11 @@ public class HPAStarTesterWnd {
 
 		grid.clearDebugColors();
 		benchmark(grid, hpaStar, aStar);
+	}
+
+	private static HPAStarTestGrid getGridByMapName(String mapName) throws MapLoadException {
+		MainGrid mainGrid = TestUtils.getGridByMapName(mapName);
+		return new HPAStarTestGrid(new MainGridDataAccessor(mainGrid));
 	}
 
 	private static void benchmark(HPAStarTestGrid grid, HPAStar hpaStar, BucketQueueAStar<Object> aStar) {
@@ -114,17 +113,4 @@ public class HPAStarTesterWnd {
 		}
 	}
 
-	private static HPAStarTestGrid getGridByMap(String mapName) throws MapLoadException {
-		TestUtils.setupSwingResources();
-
-		MapLoader map = MapList.getDefaultList().getMapByName(mapName);
-		MatchConstants.clock = new NetworkTimer();
-		RandomSingleton.load(1);
-
-		boolean[] players = new boolean[map.getMaxPlayers()];
-		Arrays.fill(players, true);
-
-		MainGrid grid = map.loadMainGrid(players).getMainGrid();
-		return new HPAStarTestGrid(new MainGridDataAccessor(grid));
-	}
 }

@@ -22,8 +22,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 
 import jsettlers.common.map.IGraphicsGrid;
+import jsettlers.common.map.MapLoadException;
 import jsettlers.graphics.JSettlersScreen;
 import jsettlers.graphics.action.Action;
 import jsettlers.graphics.action.EActionType;
@@ -36,7 +38,13 @@ import jsettlers.graphics.startscreen.interfaces.FakeMapGame;
 import jsettlers.graphics.startscreen.interfaces.IStartedGame;
 import jsettlers.graphics.swing.resources.ConfigurationPropertiesFile;
 import jsettlers.graphics.swing.resources.SwingResourceLoader;
+import jsettlers.logic.constants.MatchConstants;
+import jsettlers.logic.map.grid.MainGrid;
+import jsettlers.logic.map.save.MapList;
+import jsettlers.logic.map.save.loader.MapLoader;
 import jsettlers.main.swing.SwingManagedJSettlers;
+import jsettlers.network.synchronic.random.RandomSingleton;
+import jsettlers.network.synchronic.timer.NetworkTimer;
 
 /**
  * Utility class holding methods needed by serveral test classes.
@@ -119,4 +127,16 @@ public final class TestUtils {
 		return mapContent.getInterfaceConnector();
 	}
 
+	public static MainGrid getGridByMapName(String mapName) throws MapLoadException {
+		TestUtils.setupSwingResources();
+
+		MapLoader map = MapList.getDefaultList().getMapByName(mapName);
+		MatchConstants.clock = new NetworkTimer();
+		RandomSingleton.load(1);
+
+		boolean[] players = new boolean[map.getMaxPlayers()];
+		Arrays.fill(players, true);
+
+		return map.loadMainGrid(players).getMainGrid();
+	}
 }
