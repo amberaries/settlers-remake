@@ -25,6 +25,7 @@ import jsettlers.algorithms.path.hpastar.graph.generation.SparseTransitionsCalcu
 import jsettlers.common.logging.MilliStopWatch;
 import jsettlers.common.map.MapLoadException;
 import jsettlers.common.position.ShortPoint2D;
+import jsettlers.common.utils.Tuple;
 import jsettlers.graphics.action.Action;
 import jsettlers.graphics.action.EActionType;
 import jsettlers.graphics.map.MapInterfaceConnector;
@@ -39,7 +40,7 @@ import jsettlers.network.synchronic.timer.NetworkTimer;
 public class HPAStarTesterWnd {
 
 	private static final boolean RANDOM_MAP = false;
-	private static final int CELL_SIZE = 16;
+	private static final int CELL_SIZE = 128;
 
 	public static void main(String args[]) throws MapLoadException {
 		final HPAStarTestGrid grid;
@@ -57,6 +58,7 @@ public class HPAStarTesterWnd {
 		System.out.println("starting calculation of hpaStar grid...");
 		MilliStopWatch watch = new MilliStopWatch();
 		HPAStarAbstractedGridCalculator hpaStarGridCalculator = new HPAStarAbstractedGridCalculator(grid, grid.getWidth(), grid.getHeight(),
+				// new SparseTransitionsCalculatorFactory());
 				new SparseTransitionsCalculatorFactory());
 		HPAStarAbstractedGrid abstractedGrid = hpaStarGridCalculator.calculateAbstractedGrid(CELL_SIZE);
 		watch.stop("calculating abstracted grid (cellSize=" + CELL_SIZE + ") needed");
@@ -64,7 +66,7 @@ public class HPAStarTesterWnd {
 		// calculate path
 		BucketQueueAStar<Object> aStar = new BucketQueueAStar<Object>(grid.getAStarMap(), grid.getWidth(), grid.getHeight());
 		HPAStar hpaStar = new HPAStar(abstractedGrid, grid, grid.getWidth(), grid.getHeight());
-		// hpaStar.findPath((short) 15, (short) 39, (short) 18, (short) 33);
+		// hpaStar.findPath((short) 47, (short) 31, (short) 18, (short) 45);
 
 		grid.clearDebugColors();
 		benchmark(grid, hpaStar, aStar);
@@ -78,38 +80,35 @@ public class HPAStarTesterWnd {
 
 		int seed = 1;
 		int paths = 1000;
-		{
-			Random r = new Random(seed);
-			MilliStopWatch watch = new MilliStopWatch();
-			for (int i = 0; i < paths; i++) {
-				short sx = (short) r.nextInt(grid.getWidth());
-				short sy = (short) r.nextInt(grid.getHeight());
-				short tx = (short) r.nextInt(grid.getWidth());
-				short ty = (short) r.nextInt(grid.getHeight());
+		Random r = new Random(seed);
+		@SuppressWarnings("unchecked")
+		Tuple<ShortPoint2D, ShortPoint2D>[] pathChallanges = new Tuple[paths];
 
-				if (!grid.isBlocked(sx, sy) && !grid.isBlocked(tx, ty) && grid.getBlockedPartition(sx, sy) == grid.getBlockedPartition(tx, ty)) {
-					aStar.findPath(null, sx, sy, tx, ty);
-				} else {
-					i--;
-				}
+		for (int i = 0; i < paths; i++) {
+			short sx = (short) r.nextInt(grid.getWidth());
+			short sy = (short) r.nextInt(grid.getHeight());
+			short tx = (short) r.nextInt(grid.getWidth());
+			short ty = (short) r.nextInt(grid.getHeight());
+
+			if (!grid.isBlocked(sx, sy) && !grid.isBlocked(tx, ty) && grid.getBlockedPartition(sx, sy) == grid.getBlockedPartition(tx, ty)) {
+				pathChallanges[i] = new Tuple<>(new ShortPoint2D(sx, sy), new ShortPoint2D(tx, ty));
+			} else {
+				i--; // this wasn't a valid path, try again
+			}
+		}
+
+		{
+			MilliStopWatch watch = new MilliStopWatch();
+			for (Tuple<ShortPoint2D, ShortPoint2D> challange : pathChallanges) {
+				aStar.findPath(null, challange.e1.x, challange.e1.y, challange.e2.x, challange.e2.y);
 			}
 			watch.stop("aStar: paths: " + paths + ", seed: " + seed + " needed");
 		}
 
 		{
-			Random r = new Random(seed);
 			MilliStopWatch watch = new MilliStopWatch();
-			for (int i = 0; i < paths; i++) {
-				short sx = (short) r.nextInt(grid.getWidth());
-				short sy = (short) r.nextInt(grid.getHeight());
-				short tx = (short) r.nextInt(grid.getWidth());
-				short ty = (short) r.nextInt(grid.getHeight());
-
-				if (!grid.isBlocked(sx, sy) && !grid.isBlocked(tx, ty) && grid.getBlockedPartition(sx, sy) == grid.getBlockedPartition(tx, ty)) {
-					hpaStar.findPath(sx, sy, tx, ty);
-				} else {
-					i--;
-				}
+			for (Tuple<ShortPoint2D, ShortPoint2D> challange : pathChallanges) {
+				hpaStar.findPath(challange.e1.x, challange.e1.y, challange.e2.x, challange.e2.y);
 			}
 			watch.stop("hpaStar: paths: " + paths + ", seed: " + seed + " needed");
 		}

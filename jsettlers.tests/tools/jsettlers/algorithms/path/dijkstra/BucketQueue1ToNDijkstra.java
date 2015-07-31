@@ -40,6 +40,7 @@ public class BucketQueue1ToNDijkstra {
 	protected final DijkstraGrid map;
 
 	protected final short width;
+	private final short height;
 
 	protected final BitSet openBitSet;
 	protected final BitSet closedBitSet;
@@ -51,6 +52,7 @@ public class BucketQueue1ToNDijkstra {
 	public BucketQueue1ToNDijkstra(DijkstraGrid map, short width, short height) {
 		this.map = map;
 		this.width = width;
+		this.height = height;
 
 		this.open = new FlexibleListMinBucketQueue(width * height, 1024);
 
@@ -59,8 +61,10 @@ public class BucketQueue1ToNDijkstra {
 		this.costs = new float[width * height];
 	}
 
-	public final Tuple<Integer, float[]> calculateCosts(final ShortPoint2D minCorner, final ShortPoint2D maxCorner, final ShortPoint2D start,
+	public final Tuple<Integer, float[]> calculateCosts(final ShortPoint2D minCorner, ShortPoint2D maxCorner, final ShortPoint2D start,
 			final List<? extends ShortPoint2D> targets) {
+		maxCorner = maxCorner.min(width - 1, height - 1);
+
 		clearState();
 
 		initStartNode(start);

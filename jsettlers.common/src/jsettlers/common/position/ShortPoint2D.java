@@ -122,4 +122,8 @@ public class ShortPoint2D implements Serializable {
 	public ShortPoint2D add(int value) {
 		return new ShortPoint2D(x + value, y + value);
 	}
+
+	public ShortPoint2D min(int x, int y) {
+		return new ShortPoint2D(Math.min(this.x, x), Math.min(this.y, y));
+	}
 }

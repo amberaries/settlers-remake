@@ -14,8 +14,8 @@
  *******************************************************************************/
 package jsettlers.algorithms.path.hpastar.graph.generation;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import jsettlers.algorithms.path.hpastar.graph.Vertex;
 import jsettlers.common.position.ShortPoint2D;
@@ -23,12 +23,12 @@ import jsettlers.common.position.ShortPoint2D;
 public class Transition extends ShortPoint2D {
 	private static final long serialVersionUID = -2605651034142074418L;
 
-	private final List<Transition> neighbors;
+	private final Set<Transition> neighbors;
 	private final Vertex vertex;
 
 	public Transition(int x, int y) {
 		super(x, y);
-		neighbors = new ArrayList<Transition>();
+		neighbors = new HashSet<Transition>();
 		vertex = new Vertex(x, y);
 	}
 
@@ -37,7 +37,7 @@ public class Transition extends ShortPoint2D {
 		v.neighbors.add(this);
 	}
 
-	public List<Transition> getNeighbors() {
+	public Set<Transition> getNeighbors() {
 		return neighbors;
 	}
 
