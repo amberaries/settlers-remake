@@ -32,6 +32,8 @@ import jsettlers.logic.map.grid.flags.FlagsGrid;
 import jsettlers.logic.map.grid.landscape.LandscapeGrid;
 
 public class HPAStarTestGrid extends HPAStarFactoryGrid {
+	public static boolean ENABLE_DEBUG_COLORS = true;
+
 	private final short width;
 	private final short height;
 	private final boolean[][] blocked;
@@ -42,8 +44,13 @@ public class HPAStarTestGrid extends HPAStarFactoryGrid {
 		this.width = (short) width;
 		this.height = (short) height;
 		blocked = new boolean[width][height];
-		debugColors = new int[width][height];
 		blockedPartition = new short[width][height];
+
+		if (ENABLE_DEBUG_COLORS) {
+			debugColors = new int[width][height];
+		} else {
+			debugColors = null;
+		}
 	}
 
 	public HPAStarTestGrid(final int width, final int height, float blockedPercentage) {
@@ -85,7 +92,8 @@ public class HPAStarTestGrid extends HPAStarFactoryGrid {
 
 	@Override
 	public void setDebugColor(int x, int y, Color color) {
-		debugColors[x][y] = color == null ? 0 : color.getARGB();
+		if (ENABLE_DEBUG_COLORS)
+			debugColors[x][y] = color == null ? 0 : color.getARGB();
 	}
 
 	public short getBlockedPartition(int x, int y) {
@@ -99,9 +107,11 @@ public class HPAStarTestGrid extends HPAStarFactoryGrid {
 
 	@Override
 	public void clearDebugColors() {
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				debugColors[x][y] = 0;
+		if (ENABLE_DEBUG_COLORS) {
+			for (int x = 0; x < width; x++) {
+				for (int y = 0; y < height; y++) {
+					debugColors[x][y] = 0;
+				}
 			}
 		}
 	}
@@ -205,7 +215,8 @@ public class HPAStarTestGrid extends HPAStarFactoryGrid {
 
 			@Override
 			public int getDebugColorAt(int x, int y, EDebugColorModes debugColorMode) {
-				int debugColor = debugColors[x][y];
+				int debugColor = ENABLE_DEBUG_COLORS ? debugColors[x][y] : 0;
+
 				return debugColor == 0 ? blocked[x][y] ? Color.BLACK.getARGB() : 0 : debugColor;
 			}
 		};

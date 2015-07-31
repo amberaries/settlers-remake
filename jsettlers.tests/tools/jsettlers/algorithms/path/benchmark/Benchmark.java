@@ -15,7 +15,7 @@ import jsettlers.logic.map.grid.MainGridDataAccessor;
 public class Benchmark {
 
 	public static void main(String args[]) throws MapLoadException {
-		// HPAStarTestGrid.ENABLE_DEBUG_COLORS = false;
+		 HPAStarTestGrid.ENABLE_DEBUG_COLORS = false;
 		final HPAStarTestGrid grid = getGridByMapName("big map");
 
 		Benchmarkable[] benchmarkables = new Benchmarkable[] {
