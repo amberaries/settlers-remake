@@ -22,7 +22,6 @@ import jsettlers.algorithms.path.astar.Heuristics;
 import jsettlers.algorithms.path.dijkstra.BucketQueue1ToNDijkstra;
 import jsettlers.algorithms.path.dijkstra.DijkstraGrid;
 import jsettlers.algorithms.path.hpastar.graph.HPAStarAbstractedGrid;
-import jsettlers.algorithms.path.hpastar.graph.HPAStarPath;
 import jsettlers.algorithms.path.hpastar.graph.Vertex;
 import jsettlers.common.Color;
 import jsettlers.common.position.ShortPoint2D;

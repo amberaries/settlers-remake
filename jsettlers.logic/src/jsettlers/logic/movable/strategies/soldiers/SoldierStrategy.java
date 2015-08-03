@@ -299,9 +299,9 @@ public abstract class SoldierStrategy extends MovableStrategy implements IBuildi
 			ShortPoint2D rightPos = rightDir.getNextHexPoint(position);
 
 			if (grid.isFreePosition(leftPos)) {
-				return new Path(leftPos);
+				return Path.createPath(leftPos);
 			} else if (grid.isFreePosition(rightPos)) {
-				return new Path(rightPos);
+				return Path.createPath(rightPos);
 			} else {
 				EDirection twoLeftDir = direction.getNeighbor(-2);
 				ShortPoint2D twoLeftPos = twoLeftDir.getNextHexPoint(position);
@@ -309,9 +309,9 @@ public abstract class SoldierStrategy extends MovableStrategy implements IBuildi
 				ShortPoint2D twoRightPos = twoRightDir.getNextHexPoint(position);
 
 				if (grid.isFreePosition(twoLeftPos)) {
-					return new Path(twoLeftPos);
+					return Path.createPath(twoLeftPos);
 				} else if (grid.isFreePosition(twoRightPos)) {
-					return new Path(twoRightPos);
+					return Path.createPath(twoRightPos);
 				} else {
 					return path;
 				}

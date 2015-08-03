@@ -291,19 +291,19 @@ public abstract class MovableStrategy implements Serializable {
 		if (twoStraight.equals(overNextPos)) {
 			if (isValidPosition(leftPos) && grid.hasNoMovableAt(leftPos.x, leftPos.y) && isValidPosition(leftStraightPos)) {
 				path.goToNextStep();
-				path = new Path(path, leftPos, leftStraightPos);
+				path = path.prependPositions(leftPos, leftStraightPos);
 			} else if (isValidPosition(rightPos) && grid.hasNoMovableAt(rightPos.x, rightPos.y) && isValidPosition(rightStraightPos)) {
 				path.goToNextStep();
-				path = new Path(path, rightPos, rightStraightPos);
+				path = path.prependPositions(rightPos, rightStraightPos);
 			} else {
 				// TODO @Andreas Eberle maybe calculate a new path
 			}
 		} else if (leftStraightPos.equals(overNextPos) && grid.hasNoMovableAt(leftPos.x, leftPos.y)) {
 			path.goToNextStep();
-			path = new Path(path, leftPos);
+			path = path.prependPositions(leftPos);
 		} else if (rightStraightPos.equals(overNextPos) && grid.hasNoMovableAt(rightPos.x, rightPos.y)) {
 			path.goToNextStep();
-			path = new Path(path, rightPos);
+			path = path.prependPositions(rightPos);
 		} else {
 			// TODO @Andreas Eberle maybe calculate a new path
 		}

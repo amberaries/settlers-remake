@@ -592,7 +592,7 @@ public final class Movable implements IScheduledTimerable, IPathRequirements, II
 		ShortPoint2D targetPos = direction.getNextHexPoint(position);
 		this.direction = direction;
 		setState(EMovableState.PATHING);
-		this.followPath(new Path(targetPos));
+		this.followPath(Path.createPath(targetPos));
 	}
 
 	/**

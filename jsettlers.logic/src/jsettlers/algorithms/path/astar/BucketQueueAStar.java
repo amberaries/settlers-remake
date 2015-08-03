@@ -16,6 +16,7 @@ package jsettlers.algorithms.path.astar;
 
 import java.util.BitSet;
 
+import jsettlers.algorithms.path.FullPath;
 import jsettlers.algorithms.path.InvalidStartPositionException;
 import jsettlers.algorithms.path.Path;
 import jsettlers.algorithms.queues.bucket.AbstractMinBucketQueue;
@@ -145,7 +146,7 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 
 		if (closedBitSet.get(targetFlatIdx)) {
 			int pathlength = depthParentHeap[getDepthIdx(getFlatIdx(tx, ty))];
-			Path path = new Path(pathlength);
+			FullPath path = new FullPath(pathlength);
 
 			int idx = pathlength;
 			int parentFlatIdx = targetFlatIdx;
