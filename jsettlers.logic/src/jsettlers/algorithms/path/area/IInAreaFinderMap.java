@@ -16,10 +16,10 @@ package jsettlers.algorithms.path.area;
 
 import jsettlers.common.material.ESearchType;
 
-public interface IInAreaFinderMap<T> {
+public interface IInAreaFinderMap {
 
-	boolean isBlocked(T requester, int tileX, int tileY);
+	boolean isBlocked(int tileX, int tileY, boolean needsPlayersGround, byte playerId);
 
-	boolean fitsSearchType(int tileX, int tileY, ESearchType searched, T requester);
+	boolean fitsSearchType(int tileX, int tileY, ESearchType searched, boolean needsPlayersGround, byte playerId);
 
 }

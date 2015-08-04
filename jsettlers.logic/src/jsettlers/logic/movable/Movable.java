@@ -35,7 +35,6 @@ import jsettlers.input.IGuiMovable;
 import jsettlers.logic.buildings.military.occupying.IOccupyableBuilding;
 import jsettlers.logic.constants.Constants;
 import jsettlers.logic.constants.MatchConstants;
-import jsettlers.logic.map.grid.IPathRequirements;
 import jsettlers.logic.movable.interfaces.AbstractMovableGrid;
 import jsettlers.logic.movable.interfaces.AbstractStrategyGrid;
 import jsettlers.logic.movable.interfaces.IAttackable;
@@ -55,7 +54,7 @@ import jsettlers.network.synchronic.random.RandomSingleton;
  * @author Andreas Eberle
  * 
  */
-public final class Movable implements IScheduledTimerable, IPathRequirements, IIDable, IDebugable, Serializable, IViewDistancable, IGuiMovable,
+public final class Movable implements IScheduledTimerable, IIDable, IDebugable, Serializable, IViewDistancable, IGuiMovable,
 		IAttackableMovable {
 	private static final long serialVersionUID = 2472076796407425256L;
 	private static final HashMap<Integer, Movable> movablesByID = new HashMap<Integer, Movable>();
@@ -280,8 +279,9 @@ public final class Movable implements IScheduledTimerable, IPathRequirements, II
 		direction = EDirection.getDirection(position.x, position.y, path.nextX(), path.nextY());
 
 		if (grid.hasNoMovableAt(path.nextX(), path.nextY())) { // if we can go on to the next step
-			if (!grid.isValidNextPathPosition(this, path.getNextPos(), path.getTargetPos())) { // next position is invalid
-				Path newPath = grid.calculatePathTo(this, position, path.getTargetPos()); // try to find a new path
+			if (!grid.isValidNextPathPosition(path.getNextPos(), path.getTargetPos(), needsPlayersGround(), player.playerId)) {
+				// next position invalid => try to find a new path
+				Path newPath = calculatePathTo(path.getTargetPos());
 				if (newPath == null) { // no path found
 					setState(EMovableState.DOING_NOTHING);
 					movableAction = EAction.NO_ACTION;
@@ -320,7 +320,7 @@ public final class Movable implements IScheduledTimerable, IPathRequirements, II
 
 	private int doingNothingAction() {
 		if (grid.isBlockedOrProtected(position.x, position.y)) {
-			Path newPath = grid.searchDijkstra(this, position, position.x, position.y, (short) 50, ESearchType.NON_BLOCKED_OR_PROTECTED);
+			Path newPath = searchDijkstra(position.x, position.y, (short) 50, ESearchType.NON_BLOCKED_OR_PROTECTED);
 			if (newPath == null) {
 				kill();
 				return -1;
@@ -553,7 +553,7 @@ public final class Movable implements IScheduledTimerable, IPathRequirements, II
 	final boolean goToPos(ShortPoint2D targetPos) {
 		assert state == EMovableState.DOING_NOTHING : "can't do goToPos() if state isn't DOING_NOTHING. curr state: " + state;
 
-		Path path = grid.calculatePathTo(this, position, targetPos);
+		Path path = calculatePathTo(targetPos);
 		if (path == null) {
 			return false;
 		} else {
@@ -572,7 +572,7 @@ public final class Movable implements IScheduledTimerable, IPathRequirements, II
 	 */
 	final boolean goInDirection(EDirection direction) {
 		ShortPoint2D pos = direction.getNextHexPoint(position);
-		if (grid.isValidPosition(this, pos) && grid.hasNoMovableAt(pos.x, pos.y)) {
+		if (isValidPosition(pos) && grid.hasNoMovableAt(pos.x, pos.y)) {
 			initGoingSingleStep(pos);
 			this.direction = direction;
 			setState(EMovableState.GOING_SINGLE_STEP);
@@ -623,6 +623,10 @@ public final class Movable implements IScheduledTimerable, IPathRequirements, II
 		this.visible = visible;
 	}
 
+	final boolean fitsSearchType(ShortPoint2D position, ESearchType searchType) {
+		return grid.fitsSearchType(position.x, position.y, searchType, needsPlayersGround(), player.playerId);
+	}
+
 	/**
 	 * 
 	 * @param dijkstra
@@ -638,9 +642,9 @@ public final class Movable implements IScheduledTimerable, IPathRequirements, II
 		assert state == EMovableState.DOING_NOTHING : "this method can only be invoked in state DOING_NOTHING";
 
 		if (dikjstra) {
-			this.path = grid.searchDijkstra(this, position, centerX, centerY, radius, searchType);
+			this.path = searchDijkstra(centerX, centerY, radius, searchType);
 		} else {
-			this.path = grid.searchInArea(this, position, centerX, centerY, radius, searchType);
+			this.path = grid.searchInArea(position, centerX, centerY, radius, searchType, needsPlayersGround(), player.playerId);
 		}
 
 		return path != null;
@@ -656,7 +660,7 @@ public final class Movable implements IScheduledTimerable, IPathRequirements, II
 	}
 
 	final boolean isValidPosition(ShortPoint2D position) {
-		return grid.isValidPosition(this, position);
+		return grid.isValidPosition(position, needsPlayersGround(), player.playerId);
 	}
 
 	void abortPath() {
@@ -807,11 +811,6 @@ public final class Movable implements IScheduledTimerable, IPathRequirements, II
 	}
 
 	@Override
-	public final boolean needsPlayersGround() {
-		return movableType.needsPlayersGround();
-	}
-
-	@Override
 	public final short getViewDistance() {
 		return Constants.MOVABLE_VIEW_DISTANCE;
 	}
@@ -894,6 +893,18 @@ public final class Movable implements IScheduledTimerable, IPathRequirements, II
 		if (playerOfPosition != player && movableType.needsPlayersGround() && strategy.getClass() != FleeStrategy.class) {
 			setStrategy(new FleeStrategy(this));
 		}
+	}
+
+	private Path calculatePathTo(ShortPoint2D targetPos) {
+		return grid.calculatePathTo(position, targetPos, needsPlayersGround(), player.playerId);
+	}
+
+	private Path searchDijkstra(short centerX, short centerY, short radius, ESearchType searchType) {
+		return grid.searchDijkstra(position, centerX, centerY, radius, searchType, needsPlayersGround(), player.playerId);
+	}
+
+	private boolean needsPlayersGround() {
+		return movableType.needsPlayersGround();
 	}
 
 	@Override

@@ -16,9 +16,9 @@ package jsettlers.algorithms.path.astar;
 
 import jsettlers.common.Color;
 
-public interface IAStarPathMap<T> {
+public interface IAStarPathMap {
 
-	boolean isBlocked(T requirements, int x, int y);
+	boolean isBlocked(int x, int y, boolean needsPlayersGround, byte playerId);
 
 	float getCost(int sx, int sy, int tx, int ty);
 

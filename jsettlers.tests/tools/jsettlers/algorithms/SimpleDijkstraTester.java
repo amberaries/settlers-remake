@@ -21,17 +21,15 @@ import jsettlers.algorithms.path.dijkstra.DijkstraAlgorithm;
 import jsettlers.algorithms.path.dijkstra.IDijkstraPathMap;
 import jsettlers.common.material.ESearchType;
 import jsettlers.common.position.ShortPoint2D;
-import jsettlers.logic.buildings.military.occupying.PathRequirements;
-import jsettlers.logic.map.grid.IPathRequirements;
 
 public class SimpleDijkstraTester {
 	private static final short WIDTH = (short) 200;
 	private static final short HEIGHT = (short) 200;
 
 	public static void main(String args[]) {
-		IDijkstraPathMap<IPathRequirements> map = new IDijkstraPathMap<IPathRequirements>() {
+		IDijkstraPathMap map = new IDijkstraPathMap() {
 			@Override
-			public boolean fitsSearchType(int x, int y, ESearchType type, IPathRequirements requirements) {
+			public boolean fitsSearchType(int x, int y, ESearchType type, boolean needsPlayersGround, byte playerId) {
 				if (x == 120 && y == 100)
 					return true;
 				if (x == 110 && y == 110)
@@ -49,10 +47,10 @@ public class SimpleDijkstraTester {
 		DummyEmptyAStarMap aStarMap = new DummyEmptyAStarMap(WIDTH, HEIGHT);
 		aStarMap.setBlocked(120, 100, true);
 
-		DijkstraAlgorithm<IPathRequirements> dijkstra = new DijkstraAlgorithm<>(map,
-				new BucketQueueAStar<IPathRequirements>(aStarMap, WIDTH, HEIGHT), WIDTH, HEIGHT);
-		Path path = dijkstra.find(new PathRequirements((byte) 0, false), new ShortPoint2D(100, 100), (short) 100, (short) 100, (short) 1, (short) 30,
-				null);
+		DijkstraAlgorithm dijkstra = new DijkstraAlgorithm(map,
+				new BucketQueueAStar(aStarMap, WIDTH, HEIGHT), WIDTH, HEIGHT);
+		Path path = dijkstra.find(new ShortPoint2D(100, 100), (short) 100, (short) 100, (short) 1, (short) 30,
+				null, false, (byte) 0);
 		System.out.println("path:  " + path);
 	}
 }

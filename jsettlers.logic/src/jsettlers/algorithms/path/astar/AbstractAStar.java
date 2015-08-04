@@ -17,8 +17,8 @@ package jsettlers.algorithms.path.astar;
 import jsettlers.algorithms.path.Path;
 import jsettlers.common.position.ShortPoint2D;
 
-public abstract class AbstractAStar<T> {
-	public abstract Path findPath(T requester, ShortPoint2D start, ShortPoint2D target);
+public abstract class AbstractAStar {
+	public abstract Path findPath(ShortPoint2D start, ShortPoint2D target, boolean needsPlayersGround, byte playerId);
 
-	public abstract Path findPath(T requester, final short sx, final short sy, final short tx, final short ty);
+	public abstract Path findPath(final short sx, final short sy, final short tx, final short ty, boolean needsPlayersGround, byte playerId);
 }

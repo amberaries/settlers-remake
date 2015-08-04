@@ -24,7 +24,6 @@ import jsettlers.common.movable.EMovableType;
 import jsettlers.common.position.RelativePoint;
 import jsettlers.common.position.ShortPoint2D;
 import jsettlers.logic.buildings.workers.WorkerBuilding;
-import jsettlers.logic.map.grid.IPathRequirements;
 import jsettlers.logic.map.grid.objects.MapObjectsManager;
 import jsettlers.logic.map.grid.partition.manager.manageables.interfaces.IBarrack;
 import jsettlers.logic.map.grid.partition.manager.manageables.interfaces.IDiggerRequester;
@@ -142,7 +141,7 @@ public interface IBuildingsGrid {
 	 */
 	void drawWorkAreaCircle(ShortPoint2D buildingPosition, ShortPoint2D workAreaCenter, short radius, boolean draw);
 
-	boolean fitsSearchType(short x, short y, ESearchType searchType, IPathRequirements pathRequirements);
+	boolean fitsSearchType(short x, short y, ESearchType searchType, boolean needsPlayersGround, byte playerId);
 
 	boolean isInBounds(short x, short y);
 

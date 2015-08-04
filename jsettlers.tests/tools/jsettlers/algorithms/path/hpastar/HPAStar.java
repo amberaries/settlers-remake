@@ -100,14 +100,14 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 			}
 		}
 
-		return null;
+		return createPath(tx, ty);
 	}
 
 	private void initStartNodes(short sx, short sy, short tx, short ty) {
 		// make actual start node closed
 		int flatStartIndex = getFlatIdx(sx, sy);
 		closedBitSet.set(flatStartIndex);
-		depthParentHeap[getParentIdx(flatStartIndex)] = -1;
+		depthParentHeap[getParentIndex(flatStartIndex)] = -1;
 
 		// insert neighbors of start node
 		Vertex startVertex = abstractedGrid.getVertex(new ShortPoint2D(sx, sy));
@@ -136,8 +136,8 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 			}
 
 			costs[flatIndex] = cost;
-			depthParentHeap[getDepthIdx(flatIndex)] = 1;
-			depthParentHeap[getParentIdx(flatIndex)] = flatStartIndex;
+			depthParentHeap[getDepthIndex(flatIndex)] = 1;
+			depthParentHeap[getParentIndex(flatIndex)] = flatStartIndex;
 			openBitSet.set(flatIndex);
 			float costsWithHeuristic = cost + Heuristics.getHexGridNoObstaclesDistance(neighbor.x, neighbor.y, tx, ty);
 			// System.out.println(neighbor + ": " + costsWithHeuristic);
@@ -156,16 +156,16 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 			float oldCosts = costs[flatIndex];
 			if (oldCosts > newCosts) { // update path
 				costs[flatIndex] = newCosts;
-				depthParentHeap[getDepthIdx(flatIndex)] = depthParentHeap[getDepthIdx(parentFlatIndex)] + 1;
-				depthParentHeap[getParentIdx(flatIndex)] = parentFlatIndex;
+				depthParentHeap[getDepthIndex(flatIndex)] = depthParentHeap[getDepthIndex(parentFlatIndex)] + 1;
+				depthParentHeap[getParentIndex(flatIndex)] = parentFlatIndex;
 
 				int heuristicCosts = Heuristics.getHexGridNoObstaclesDistance(x, y, tx, ty);
 				open.increasedPriority(flatIndex, oldCosts + heuristicCosts, newCosts + heuristicCosts);
 			}
 		} else {
 			costs[flatIndex] = newCosts;
-			depthParentHeap[getDepthIdx(flatIndex)] = depthParentHeap[getDepthIdx(parentFlatIndex)] + 1;
-			depthParentHeap[getParentIdx(flatIndex)] = parentFlatIndex;
+			depthParentHeap[getDepthIndex(flatIndex)] = depthParentHeap[getDepthIndex(parentFlatIndex)] + 1;
+			depthParentHeap[getParentIndex(flatIndex)] = parentFlatIndex;
 			openBitSet.set(flatIndex);
 			open.insert(flatIndex, newCosts + Heuristics.getHexGridNoObstaclesDistance(x, y, tx, ty));
 
@@ -188,11 +188,31 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 		return vertexToTargetCosts;
 	}
 
-	private static final int getDepthIdx(int flatIdx) {
-		return 2 * flatIdx;
+	private static final int getDepthIndex(int flatIndex) {
+		return 2 * flatIndex;
 	}
 
-	private static final int getParentIdx(int flatIdx) {
-		return 2 * flatIdx + 1;
+	private static final int getParentIndex(int flatIndex) {
+		return 2 * flatIndex + 1;
+	}
+
+	private HPAStarPath createPath(short tx, short ty) {
+		int flatIndex = getFlatIdx(tx, ty);
+
+		if (!closedBitSet.get(flatIndex)) { // no path found
+			return null;
+		}
+
+		int length = depthParentHeap[getDepthIndex(flatIndex)] + 1;
+		HPAStarPath path = new HPAStarPath(length);
+
+		path.insertAbstractPosition(length - 1, tx, ty);
+
+		for (int index = length - 2; index >= 0; index--) {
+			flatIndex = depthParentHeap[getParentIndex(flatIndex)];
+			path.insertAbstractPosition(index, (short) getX(flatIndex), (short) getY(flatIndex));
+		}
+
+		return path;
 	}
 }

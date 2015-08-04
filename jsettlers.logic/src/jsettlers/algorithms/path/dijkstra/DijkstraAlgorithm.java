@@ -26,23 +26,23 @@ import jsettlers.common.position.ShortPoint2D;
  * @author Andreas Eberle
  * 
  */
-public final class DijkstraAlgorithm<T> {
+public final class DijkstraAlgorithm {
 	private static final byte[] directionIncreaseX = { -1, 0, 1, 1, 0, -1 };
 	private static final byte[] directionIncreaseY = { 0, 1, 1, 0, -1, -1 };
 
-	private final IDijkstraPathMap<T> map;
+	private final IDijkstraPathMap map;
 	private final short height, width;
-	private final AbstractAStar<T> aStar;
+	private final AbstractAStar aStar;
 
-	public DijkstraAlgorithm(IDijkstraPathMap<T> map, AbstractAStar<T> aStar, short width, short height) {
+	public DijkstraAlgorithm(IDijkstraPathMap map, AbstractAStar aStar, short width, short height) {
 		this.map = map;
 		this.aStar = aStar;
 		this.width = width;
 		this.height = height;
 	}
 
-	public final Path find(final T requester, ShortPoint2D pathStart, final short cX, final short cY, final short minRadius, final short maxRadius,
-			final ESearchType type) {
+	public final Path find(ShortPoint2D pathStart, final short cX, final short cY, final short minRadius, final short maxRadius,
+			final ESearchType type, boolean needsPlayersGround, byte playerId) {
 		if (!isInBounds(cX, cY)) {
 			throw new InvalidStartPositionException("dijkstra center position is not in bounds!", cX, cY);
 		}
@@ -50,8 +50,8 @@ public final class DijkstraAlgorithm<T> {
 		// check center position (special case for minRadius <= 0
 		if (minRadius <= 0) {
 			map.setDijkstraSearched(cX, cY);
-			if (map.fitsSearchType(cX, cY, type, requester)) {
-				Path path = findPathTo(requester, pathStart, cX, cY);
+			if (map.fitsSearchType(cX, cY, type, needsPlayersGround, playerId)) {
+				Path path = findPathTo(pathStart, cX, cY, needsPlayersGround, playerId);
 				if (path != null)
 					return path;
 			}
@@ -67,8 +67,8 @@ public final class DijkstraAlgorithm<T> {
 					y += dy;
 					if (isInBounds(x, y)) {
 						map.setDijkstraSearched(x, y);
-						if (map.fitsSearchType(x, y, type, requester)) {
-							Path path = findPathTo(requester, pathStart, x, y);
+						if (map.fitsSearchType(x, y, type, needsPlayersGround, playerId)) {
+							Path path = findPathTo(pathStart, x, y, needsPlayersGround, playerId);
 							if (path != null)
 								return path;
 						}
@@ -80,8 +80,8 @@ public final class DijkstraAlgorithm<T> {
 		return null;
 	}
 
-	private final Path findPathTo(T requester, ShortPoint2D start, short tx, short ty) {
-		return aStar.findPath(requester, start.x, start.y, tx, ty);
+	private final Path findPathTo(ShortPoint2D start, short tx, short ty, boolean needsPlayersGround, byte playerId) {
+		return aStar.findPath(start.x, start.y, tx, ty, needsPlayersGround, playerId);
 	}
 
 	private final boolean isInBounds(short x, short y) {

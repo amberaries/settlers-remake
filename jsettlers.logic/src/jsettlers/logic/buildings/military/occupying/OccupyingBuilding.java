@@ -211,7 +211,7 @@ public class OccupyingBuilding extends Building implements IBuilding.IOccupyed, 
 					x += dx;
 					y += dy;
 					if (circle.contains(x, y) && grid.isInBounds(x, y)) {
-						if (grid.fitsSearchType(x, y, request.searchType, new PathRequirements(this.getPlayerId(), false))) {
+						if (grid.fitsSearchType(x, y, request.searchType, false, (byte) -1)) {
 							Movable soldier = super.getGrid().getMovable(new ShortPoint2D(x, y));
 							if (soldier.setOccupyableBuilding(this)) {
 								request.setRadius(radius);

@@ -116,8 +116,8 @@ public class HPAStarTestGrid extends HPAStarFactoryGrid {
 		}
 	}
 
-	public IAStarPathMap<Object> getAStarMap() {
-		return new IAStarPathMap<Object>() {
+	public IAStarPathMap getAStarMap() {
+		return new IAStarPathMap() {
 
 			@Override
 			public void setDebugColor(int x, int y, Color color) {
@@ -135,7 +135,7 @@ public class HPAStarTestGrid extends HPAStarFactoryGrid {
 			}
 
 			@Override
-			public boolean isBlocked(Object requirements, int x, int y) {
+			public boolean isBlocked(int x, int y, boolean needsPlayersGround, byte playerId) {
 				return HPAStarTestGrid.this.isBlocked(x, y);
 			}
 

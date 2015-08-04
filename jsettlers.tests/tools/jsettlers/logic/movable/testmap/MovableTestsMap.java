@@ -34,7 +34,6 @@ import jsettlers.common.material.ESearchType;
 import jsettlers.common.movable.EDirection;
 import jsettlers.common.movable.IMovable;
 import jsettlers.common.position.ShortPoint2D;
-import jsettlers.logic.map.grid.IPathRequirements;
 import jsettlers.logic.map.grid.partition.manager.manageables.IManageableBearer;
 import jsettlers.logic.map.grid.partition.manager.manageables.IManageableBricklayer;
 import jsettlers.logic.map.grid.partition.manager.manageables.IManageableDigger;
@@ -47,7 +46,7 @@ import jsettlers.logic.objects.stack.StackMapObject;
 import jsettlers.logic.player.Player;
 import jsettlers.network.synchronic.random.RandomSingleton;
 
-public class MovableTestsMap implements IGraphicsGrid, IAStarPathMap<IPathRequirements> {
+public class MovableTestsMap implements IGraphicsGrid, IAStarPathMap {
 
 	private final short width;
 	private final short height;
@@ -56,7 +55,7 @@ public class MovableTestsMap implements IGraphicsGrid, IAStarPathMap<IPathRequir
 	private final Movable movableMap[][];
 	private final EMaterialType materialTypeMap[][];
 	private final byte materialAmmountMap[][];
-	private final BucketQueueAStar<IPathRequirements> aStar;
+	private final BucketQueueAStar aStar;
 
 	public MovableTestsMap(int width, int height, Player defaultPlayer) {
 		this.width = (short) width;
@@ -67,7 +66,7 @@ public class MovableTestsMap implements IGraphicsGrid, IAStarPathMap<IPathRequir
 		this.materialTypeMap = new EMaterialType[width][height];
 		this.materialAmmountMap = new byte[width][height];
 
-		aStar = new BucketQueueAStar<>(this, this.width, this.height);
+		aStar = new BucketQueueAStar(this, this.width, this.height);
 	}
 
 	@Override
@@ -162,8 +161,8 @@ public class MovableTestsMap implements IGraphicsGrid, IAStarPathMap<IPathRequir
 		}
 
 		@Override
-		public Path calculatePathTo(IPathRequirements pathRequester, ShortPoint2D start, ShortPoint2D targetPos) {
-			return aStar.findPath(pathRequester, start, targetPos);
+		public Path calculatePathTo(ShortPoint2D start, ShortPoint2D targetPos, boolean needsPlayersGround, byte playerId) {
+			return aStar.findPath(start, targetPos, needsPlayersGround, playerId);
 		}
 
 		@Override
@@ -301,14 +300,14 @@ public class MovableTestsMap implements IGraphicsGrid, IAStarPathMap<IPathRequir
 		}
 
 		@Override
-		public Path searchDijkstra(IPathRequirements pathRequirements, ShortPoint2D start, short centerX, short centerY, short radius,
-				ESearchType searchType) {
+		public Path searchDijkstra(ShortPoint2D start, short centerX, short centerY, short radius, ESearchType searchType,
+				boolean needsPlayersGround, byte playerId) {
 			return null;
 		}
 
 		@Override
-		public Path searchInArea(IPathRequirements pathRequirements, ShortPoint2D start, short centerX, short centerY, short radius,
-				ESearchType searchType) {
+		public Path searchInArea(ShortPoint2D start, short centerX, short centerY, short radius, ESearchType searchType,
+				boolean needsPlayersGround, byte playerId) {
 			return null;
 		}
 
@@ -321,10 +320,9 @@ public class MovableTestsMap implements IGraphicsGrid, IAStarPathMap<IPathRequir
 		}
 
 		@Override
-		public boolean isValidPosition(IPathRequirements pathRequirements, ShortPoint2D position) {
-			short x = position.x, y = position.y;
-			return isInBounds(x, y) && !isBlocked(x, y)
-					&& (!pathRequirements.needsPlayersGround() || pathRequirements.getPlayerId() == getPlayerIdAt(x, y));
+		public boolean isValidPosition(ShortPoint2D position, boolean needsPlayersGround, byte playerId) {
+			final short x = position.x, y = position.y;
+			return isInBounds(x, y) && !isBlocked(x, y) && (!needsPlayersGround || playerId == getPlayerIdAt(x, y));
 		}
 
 		@Override
@@ -338,7 +336,7 @@ public class MovableTestsMap implements IGraphicsGrid, IAStarPathMap<IPathRequir
 		}
 
 		@Override
-		public boolean fitsSearchType(short x, short y, ESearchType searchType, IPathRequirements requirements) {
+		public boolean fitsSearchType(short x, short y, ESearchType searchType, boolean needsPlayersGround, byte playerId) {
 			return false;
 		}
 
@@ -402,8 +400,8 @@ public class MovableTestsMap implements IGraphicsGrid, IAStarPathMap<IPathRequir
 		}
 
 		@Override
-		public boolean isValidNextPathPosition(IPathRequirements requirements, ShortPoint2D nextPos, ShortPoint2D targetPos) {
-			return isValidPosition(requirements, nextPos);
+		public boolean isValidNextPathPosition(ShortPoint2D nextPos, ShortPoint2D targetPos, boolean needsPlayersGround, byte playerId) {
+			return isValidPosition(nextPos, needsPlayersGround, playerId);
 		}
 
 	};
@@ -415,7 +413,7 @@ public class MovableTestsMap implements IGraphicsGrid, IAStarPathMap<IPathRequir
 	// ==================== IAStarPathMap ==============================================================
 
 	@Override
-	public boolean isBlocked(IPathRequirements requirements, int x, int y) {
+	public boolean isBlocked(int x, int y, boolean needsPlayersGround, byte playerId) {
 		return false;
 	}
 

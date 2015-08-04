@@ -30,11 +30,11 @@ import jsettlers.common.position.ShortPoint2D;
  * @author Andreas Eberle
  * 
  */
-public final class BucketQueueAStar<T> extends AbstractAStar<T> {
+public final class BucketQueueAStar extends AbstractAStar {
 	private static final byte[] xDeltaArray = EDirection.DIRECTION_DELTAS_X;
 	private static final byte[] yDeltaArray = EDirection.DIRECTION_DELTAS_Y;
 
-	private final IAStarPathMap<T> map;
+	private final IAStarPathMap map;
 
 	private final short height;
 	private final short width;
@@ -48,7 +48,7 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 
 	private final AbstractMinBucketQueue open;
 
-	public BucketQueueAStar(IAStarPathMap<T> map, short width, short height) {
+	public BucketQueueAStar(IAStarPathMap map, short width, short height) {
 		this.map = map;
 		this.width = width;
 		this.height = height;
@@ -63,20 +63,21 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 	}
 
 	@Override
-	public final Path findPath(T requester, ShortPoint2D start, ShortPoint2D target) {
-		return findPath(requester, start.x, start.y, target.x, target.y);
+	public final Path findPath(ShortPoint2D start, ShortPoint2D target, boolean needsPlayersGround, byte playerId) {
+		return findPath(start.x, start.y, target.x, target.y, needsPlayersGround, playerId);
 	}
 
 	@Override
-	public final Path findPath(T requester, final short sx, final short sy, final short tx, final short ty) {
+	public final Path findPath(final short sx, final short sy, final short tx, final short ty, boolean needsPlayersGround, byte playerId) {
 		final boolean blockedAtStart;
 		if (!isInBounds(sx, sy)) {
 			throw new InvalidStartPositionException("Start position is out of bounds!", sx, sy);
-		} else if (!isInBounds(tx, ty) || map.isBlocked(requester, tx, ty) || map.getBlockedPartition(sx, sy) != map.getBlockedPartition(tx, ty)) {
+		} else if (!isInBounds(tx, ty) || map.isBlocked(tx, ty, needsPlayersGround, playerId)
+				|| map.getBlockedPartition(sx, sy) != map.getBlockedPartition(tx, ty)) {
 			return null; // target can not be reached
 		} else if (sx == tx && sy == ty) {
 			return null;
-		} else if (map.isBlocked(requester, sx, sy)) {
+		} else if (map.isBlocked(sx, sy, needsPlayersGround, playerId)) {
 			blockedAtStart = true;
 		} else {
 			blockedAtStart = false;
@@ -112,7 +113,7 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 				final int neighborX = x + xDeltaArray[i];
 				final int neighborY = y + yDeltaArray[i];
 
-				if (isValidPosition(requester, neighborX, neighborY, blockedAtStart)) {
+				if (isValidPosition(neighborX, neighborY, blockedAtStart, needsPlayersGround, playerId)) {
 					final int flatNeighborIdx = getFlatIdx(neighborX, neighborY);
 
 					if (!closedBitSet.get(flatNeighborIdx)) {
@@ -181,8 +182,8 @@ public final class BucketQueueAStar<T> extends AbstractAStar<T> {
 		openBitSet.set(flatIdx);
 	}
 
-	private final boolean isValidPosition(T requester, int x, int y, boolean blockedAtStart) {
-		return isInBounds(x, y) && (!map.isBlocked(requester, x, y) || blockedAtStart);
+	private final boolean isValidPosition(int x, int y, boolean blockedAtStart, boolean needsPlayersGround, byte playerId) {
+		return isInBounds(x, y) && (!map.isBlocked(x, y, needsPlayersGround, playerId) || blockedAtStart);
 	}
 
 	private final boolean isInBounds(int x, int y) {

@@ -18,7 +18,6 @@ import jsettlers.algorithms.path.Path;
 import jsettlers.common.mapobject.EMapObjectType;
 import jsettlers.common.material.ESearchType;
 import jsettlers.common.position.ShortPoint2D;
-import jsettlers.logic.map.grid.IPathRequirements;
 import jsettlers.logic.movable.Movable;
 import jsettlers.logic.player.Player;
 
@@ -87,16 +86,16 @@ public abstract class AbstractMovableGrid extends AbstractStrategyGrid {
 
 	public abstract Player getPlayerAt(ShortPoint2D position);
 
-	public abstract Path calculatePathTo(IPathRequirements pathRequirements, ShortPoint2D start, ShortPoint2D targetPos);
+	public abstract Path calculatePathTo(ShortPoint2D start, ShortPoint2D targetPos, boolean needsPlayersGround, byte playerId);
 
-	public abstract Path searchDijkstra(IPathRequirements pathRequirements, ShortPoint2D start, short centerX, short centerY, short radius,
-			ESearchType searchType);
+	public abstract Path searchDijkstra(ShortPoint2D start, short centerX, short centerY, short radius, ESearchType searchType,
+			boolean needsPlayersGround, byte playerId);
 
-	public abstract Path searchInArea(IPathRequirements pathRequirements, ShortPoint2D start, short centerX, short centerY, short radius,
-			ESearchType searchType);
+	public abstract Path searchInArea(ShortPoint2D start, short centerX, short centerY, short radius, ESearchType searchType,
+			boolean needsPlayersGround, byte playerId);
 
-	public abstract boolean isValidPosition(IPathRequirements pathRequirements, ShortPoint2D position);
+	public abstract boolean isValidPosition(ShortPoint2D position, boolean needsPlayersGround, byte playerId);
 
-	public abstract boolean isValidNextPathPosition(IPathRequirements pathRequirements, ShortPoint2D nextPos, ShortPoint2D targetPos);
+	public abstract boolean isValidNextPathPosition(ShortPoint2D nextPos, ShortPoint2D targetPos, boolean needsPlayersGround, byte playerId);
 
 }

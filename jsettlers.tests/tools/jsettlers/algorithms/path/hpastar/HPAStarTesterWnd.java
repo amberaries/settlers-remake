@@ -58,7 +58,7 @@ public class HPAStarTesterWnd {
 		watch.stop("calculating abstracted grid (cellSize=" + CELL_SIZE + ") needed");
 
 		// calculate path
-		BucketQueueAStar<Object> aStar = new BucketQueueAStar<Object>(grid.getAStarMap(), grid.getWidth(), grid.getHeight());
+		BucketQueueAStar aStar = new BucketQueueAStar(grid.getAStarMap(), grid.getWidth(), grid.getHeight());
 		HPAStar hpaStar = new HPAStar(abstractedGrid, grid, grid.getWidth(), grid.getHeight());
 		// hpaStar.findPath((short) 47, (short) 31, (short) 18, (short) 45);
 
@@ -71,7 +71,7 @@ public class HPAStarTesterWnd {
 		return new HPAStarTestGrid(new MainGridDataAccessor(mainGrid));
 	}
 
-	private static void benchmark(HPAStarTestGrid grid, HPAStar hpaStar, BucketQueueAStar<Object> aStar) {
+	private static void benchmark(HPAStarTestGrid grid, HPAStar hpaStar, BucketQueueAStar aStar) {
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
@@ -99,7 +99,7 @@ public class HPAStarTesterWnd {
 		{
 			MilliStopWatch watch = new MilliStopWatch();
 			for (Tuple<ShortPoint2D, ShortPoint2D> challange : pathChallanges) {
-				aStar.findPath(null, challange.e1.x, challange.e1.y, challange.e2.x, challange.e2.y);
+				aStar.findPath(challange.e1.x, challange.e1.y, challange.e2.x, challange.e2.y, false, (byte) -1);
 			}
 			watch.stop("aStar: paths: " + paths + ", seed: " + seed + " needed");
 		}
@@ -112,5 +112,4 @@ public class HPAStarTesterWnd {
 			watch.stop("hpaStar: paths: " + paths + ", seed: " + seed + " needed");
 		}
 	}
-
 }

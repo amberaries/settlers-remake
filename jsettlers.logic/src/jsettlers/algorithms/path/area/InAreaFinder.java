@@ -26,12 +26,12 @@ import jsettlers.network.synchronic.random.RandomSingleton;
  * @author Andreas Eberle
  * 
  */
-public final class InAreaFinder<T> {
-	private final IInAreaFinderMap<T> map;
+public final class InAreaFinder {
+	private final IInAreaFinderMap map;
 	private final short width;
 	private final short height;
 
-	public InAreaFinder(IInAreaFinderMap<T> map, short width, short height) {
+	public InAreaFinder(IInAreaFinderMap map, short width, short height) {
 		this.map = map;
 		this.width = width;
 		this.height = height;
@@ -47,8 +47,7 @@ public final class InAreaFinder<T> {
 	 * @return an SPoint2D object if the searched thing has been found<br>
 	 *         null if it hasn't been found.
 	 */
-	public final ShortPoint2D find(T requester, short centerX, short centerY, short searchRadius, ESearchType searched) {
-
+	public final ShortPoint2D find(short centerX, short centerY, short searchRadius, ESearchType searched, boolean needsPlayersGround, byte playerId) {
 		for (int i = 0; i < 100; i++) {
 			double angle = RandomSingleton.nextD() * 2 * Math.PI; // get an angle in the interval [0, 2PI]
 			double radius = Math.pow(RandomSingleton.nextD(), 3.9) * searchRadius; // get a radius in the interval [0, pixelRadius]
@@ -56,7 +55,8 @@ public final class InAreaFinder<T> {
 			short tileX = (short) (Math.cos(angle) * radius + centerX);
 			short tileY = (short) (Math.sin(angle) * radius + centerY);
 
-			if (isInBounds(tileX, tileY) && !map.isBlocked(requester, tileX, tileY) && map.fitsSearchType(tileX, tileY, searched, requester)) {
+			if (isInBounds(tileX, tileY) && !map.isBlocked(tileX, tileY, needsPlayersGround, playerId)
+					&& map.fitsSearchType(tileX, tileY, searched, needsPlayersGround, playerId)) {
 				return new ShortPoint2D(tileX, tileY);
 			}
 		}

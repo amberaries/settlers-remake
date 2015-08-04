@@ -192,7 +192,7 @@ public abstract class MovableStrategy implements Serializable {
 	}
 
 	protected final boolean fitsSearchType(ShortPoint2D pos, ESearchType searchType) {
-		return movable.getStrategyGrid().fitsSearchType(pos.x, pos.y, searchType, movable);
+		return movable.fitsSearchType(pos, searchType);
 	}
 
 	protected final boolean isValidPosition(ShortPoint2D position) {

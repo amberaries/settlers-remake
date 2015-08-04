@@ -14,6 +14,117 @@
  *******************************************************************************/
 package jsettlers.algorithms.path.hpastar;
 
-public class HPAStarPath {
+import jsettlers.algorithms.path.FullPath;
+import jsettlers.algorithms.path.Path;
+import jsettlers.common.position.ShortPoint2D;
 
+class HPAStarPath extends Path {
+	private static final long serialVersionUID = -7950105340565322678L;
+
+	private final short[] abstractPath;
+	private FullPath path;
+
+	public HPAStarPath(int length) {
+		abstractPath = new short[2 * length];
+	}
+
+	public void insertAbstractPosition(int index, short x, short y) {
+		int twoTimesIndex = 2 * index;
+		abstractPath[twoTimesIndex] = x;
+		abstractPath[twoTimesIndex + 1] = y;
+	}
+
+	private void ensurePath() {
+
+	}
+
+	@Override
+	public Path prependPositions(ShortPoint2D... pathPrefix) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean hasNextStep() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public short nextX() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public short nextY() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public ShortPoint2D getNextPos() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isFinished() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public short getFirstX() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public short getFirstY() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public short getTargetX() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public short getTargetY() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void goToNextStep() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public int getStep() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean hasOverNextStep() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public ShortPoint2D getOverNextPos() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

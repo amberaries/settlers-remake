@@ -16,10 +16,9 @@ package jsettlers.algorithms.path.dijkstra;
 
 import jsettlers.common.material.ESearchType;
 
-public interface IDijkstraPathMap<T> {
+public interface IDijkstraPathMap {
 
-	boolean fitsSearchType(int x, int y, ESearchType type, T requester);
+	boolean fitsSearchType(int x, int y, ESearchType type, boolean needsPlayersGround, byte playerId);
 
 	void setDijkstraSearched(int x, int y);
-
 }

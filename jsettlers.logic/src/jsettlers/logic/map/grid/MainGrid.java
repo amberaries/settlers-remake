@@ -314,7 +314,7 @@ public final class MainGrid implements Serializable {
 	 * 
 	 * @return
 	 */
-	public IAStarPathMap<IPathRequirements> getPathfinderGrid() {
+	public IAStarPathMap getPathfinderGrid() {
 		return movablePathfinderGrid.pathfinderGrid;
 	}
 
@@ -381,18 +381,17 @@ public final class MainGrid implements Serializable {
 		}
 	}
 
-	final boolean isValidPosition(IPathRequirements pathRequirements, int x, int y) {
+	final boolean isValidPosition(int x, int y, boolean needsPlayersGround, byte playerId) {
 		return isInBounds(x, y) && !flagsGrid.isBlocked(x, y)
-				&& (!pathRequirements.needsPlayersGround() || pathRequirements.getPlayerId() == partitionsGrid.getPlayerIdAt(x, y));
+				&& (!needsPlayersGround || playerId == partitionsGrid.getPlayerIdAt(x, y));
 	}
 
-	final class PathfinderGrid implements IAStarPathMap<IPathRequirements>, IDijkstraPathMap<IPathRequirements>, IInAreaFinderMap<IPathRequirements>,
-			Serializable {
+	final class PathfinderGrid implements IAStarPathMap, IDijkstraPathMap, IInAreaFinderMap, Serializable {
 		private static final long serialVersionUID = -2775530442375843213L;
 
 		@Override
-		public boolean isBlocked(IPathRequirements requester, int x, int y) {
-			return flagsGrid.isBlocked(x, y) || (requester.needsPlayersGround() && requester.getPlayerId() != partitionsGrid.getPlayerIdAt(x, y));
+		public boolean isBlocked(int x, int y, boolean needsPlayersGround, byte playerId) {
+			return flagsGrid.isBlocked(x, y) || (needsPlayersGround && playerId != partitionsGrid.getPlayerIdAt(x, y));
 		}
 
 		@Override
@@ -417,65 +416,65 @@ public final class MainGrid implements Serializable {
 		}
 
 		@Override
-		public final boolean fitsSearchType(int x, int y, ESearchType searchType, IPathRequirements pathRequirements) {
+		public final boolean fitsSearchType(int x, int y, ESearchType searchType, boolean needsPlayersGround, byte playerId) {
 			switch (searchType) {
 
 			case UNENFORCED_FOREIGN_GROUND:
-				return !flagsGrid.isBlocked(x, y) && !hasSamePlayer(x, y, pathRequirements) && !partitionsGrid.isEnforcedByTower(x, y);
+				return !flagsGrid.isBlocked(x, y) && !hasPlayerId(x, y, playerId) && !partitionsGrid.isEnforcedByTower(x, y);
 
 			case VALID_FREE_POSITION:
-				return isValidPosition(pathRequirements, x, y) && movableGrid.hasNoMovableAt(x, y);
+				return isValidPosition(x, y, needsPlayersGround, playerId) && movableGrid.hasNoMovableAt(x, y);
 
 			case PLANTABLE_TREE:
 				return y < height - 1 && isTreePlantable(x, y + 1) && !hasProtectedNeighbor(x, y + 1)
-						&& hasSamePlayer(x, y + 1, pathRequirements) && !isMarked(x, y);
+						&& hasPlayerId(x, y + 1, playerId) && !isMarked(x, y);
 			case CUTTABLE_TREE:
 				return isInBounds(x - 1, y - 1)
 						&& isMapObjectCuttable(x - 1, y - 1, EMapObjectType.TREE_ADULT)
-						&& hasSamePlayer(x - 1, y - 1, pathRequirements) && !isMarked(x, y);
+						&& hasPlayerId(x - 1, y - 1, playerId) && !isMarked(x, y);
 
 			case PLANTABLE_CORN:
-				return !isMarked(x, y) && hasSamePlayer(x, y, pathRequirements) && isCornPlantable(x, y);
+				return !isMarked(x, y) && hasPlayerId(x, y, playerId) && isCornPlantable(x, y);
 			case CUTTABLE_CORN:
-				return isMapObjectCuttable(x, y, EMapObjectType.CORN_ADULT) && hasSamePlayer(x, y, pathRequirements) && !isMarked(x, y);
+				return isMapObjectCuttable(x, y, EMapObjectType.CORN_ADULT) && hasPlayerId(x, y, playerId) && !isMarked(x, y);
 
 			case PLANTABLE_WINE:
-				return !isMarked(x, y) && hasSamePlayer(x, y, pathRequirements) && isWinePlantable(x, y);
+				return !isMarked(x, y) && hasPlayerId(x, y, playerId) && isWinePlantable(x, y);
 			case HARVESTABLE_WINE:
-				return isMapObjectCuttable(x, y, EMapObjectType.WINE_HARVESTABLE) && hasSamePlayer(x, y, pathRequirements) && !isMarked(x, y);
+				return isMapObjectCuttable(x, y, EMapObjectType.WINE_HARVESTABLE) && hasPlayerId(x, y, playerId) && !isMarked(x, y);
 
 			case CUTTABLE_STONE:
 				return y + 1 < height && x - 1 < width && isMapObjectCuttable(x - 1, y + 1, EMapObjectType.STONE)
-						&& hasSamePlayer(x, y, pathRequirements) && !isMarked(x, y);
+						&& hasPlayerId(x, y, playerId) && !isMarked(x, y);
 
 			case ENEMY: {
 				IMovable movable = movableGrid.getMovableAt(x, y);
-				return movable != null && movable.getPlayerId() != pathRequirements.getPlayerId();
+				return movable != null && movable.getPlayerId() != playerId;
 			}
 
 			case RIVER:
-				return isRiver(x, y) && hasSamePlayer(x, y, pathRequirements) && !isMarked(x, y);
+				return isRiver(x, y) && hasPlayerId(x, y, playerId) && !isMarked(x, y);
 
 			case FISHABLE:
-				return hasSamePlayer(x, y, pathRequirements) && hasNeighbourLandscape(x, y, ELandscapeType.WATER1);
+				return hasPlayerId(x, y, playerId) && hasNeighbourLandscape(x, y, ELandscapeType.WATER1);
 
 			case NON_BLOCKED_OR_PROTECTED:
 				return !(flagsGrid.isProtected(x, y) || flagsGrid.isBlocked(x, y))
-						&& (!pathRequirements.needsPlayersGround() || hasSamePlayer(x, y, pathRequirements))
+						&& (!needsPlayersGround || hasPlayerId(x, y, playerId))
 						&& movableGrid.getMovableAt(x, y) == null;
 
 			case SOLDIER_BOWMAN:
-				return isSoldierAt(x, y, searchType, pathRequirements.getPlayerId());
+				return isSoldierAt(x, y, searchType, playerId);
 			case SOLDIER_SWORDSMAN:
-				return isSoldierAt(x, y, searchType, pathRequirements.getPlayerId());
+				return isSoldierAt(x, y, searchType, playerId);
 			case SOLDIER_PIKEMAN:
-				return isSoldierAt(x, y, searchType, pathRequirements.getPlayerId());
+				return isSoldierAt(x, y, searchType, playerId);
 
 			case RESOURCE_SIGNABLE:
 				return isInBounds(x, y) && !flagsGrid.isProtected(x, y) && !flagsGrid.isMarked(x, y) && canAddRessourceSign(x, y);
 
 			case FOREIGN_MATERIAL:
-				return isInBounds(x, y) && !hasSamePlayer(x, y, pathRequirements) && mapObjectsManager.hasStealableMaterial(x, y);
+				return isInBounds(x, y) && !hasPlayerId(x, y, playerId) && mapObjectsManager.hasStealableMaterial(x, y);
 
 			default:
 				System.err.println("ERROR: Can't handle search type in fitsSearchType(): " + searchType);
@@ -534,8 +533,8 @@ public final class MainGrid implements Serializable {
 			return false;
 		}
 
-		private final boolean hasSamePlayer(int x, int y, IPathRequirements pathRequirements) {
-			return partitionsGrid.getPlayerIdAt(x, y) == pathRequirements.getPlayerId();
+		private final boolean hasPlayerId(int x, int y, byte playerId) {
+			return partitionsGrid.getPlayerIdAt(x, y) == playerId;
 		}
 
 		private final boolean isRiver(int x, int y) {
@@ -943,9 +942,9 @@ public final class MainGrid implements Serializable {
 
 		private transient PathfinderGrid pathfinderGrid;
 
-		private transient AbstractAStar<IPathRequirements> aStar;
-		transient DijkstraAlgorithm<IPathRequirements> dijkstra; // not private, because it's used by BuildingsGrid
-		private transient InAreaFinder<IPathRequirements> inAreaFinder;
+		private transient AbstractAStar aStar;
+		transient DijkstraAlgorithm dijkstra; // not private, because it's used by BuildingsGrid
+		private transient InAreaFinder inAreaFinder;
 
 		public MovablePathfinderGrid() {
 			initPathfinders();
@@ -959,9 +958,9 @@ public final class MainGrid implements Serializable {
 		private final void initPathfinders() {
 			pathfinderGrid = new PathfinderGrid();
 
-			aStar = new BucketQueueAStar<IPathRequirements>(pathfinderGrid, width, height);
-			dijkstra = new DijkstraAlgorithm<IPathRequirements>(pathfinderGrid, aStar, width, height);
-			inAreaFinder = new InAreaFinder<IPathRequirements>(pathfinderGrid, width, height);
+			aStar = new BucketQueueAStar(pathfinderGrid, width, height);
+			dijkstra = new DijkstraAlgorithm(pathfinderGrid, aStar, width, height);
+			inAreaFinder = new InAreaFinder(pathfinderGrid, width, height);
 		}
 
 		@Override
@@ -1181,22 +1180,22 @@ public final class MainGrid implements Serializable {
 		}
 
 		@Override
-		public Path calculatePathTo(IPathRequirements pathRequirements, ShortPoint2D start, ShortPoint2D targetPos) {
-			return aStar.findPath(pathRequirements, start, targetPos);
+		public Path calculatePathTo(ShortPoint2D start, ShortPoint2D targetPos, boolean needsPlayersGround, byte playerId) {
+			return aStar.findPath(start, targetPos, needsPlayersGround, playerId);
 		}
 
 		@Override
-		public Path searchDijkstra(IPathRequirements pathRequirements, ShortPoint2D start, short centerX, short centerY, short radius,
-				ESearchType searchType) {
-			return dijkstra.find(pathRequirements, start, centerX, centerY, (short) 0, radius, searchType);
+		public Path searchDijkstra(ShortPoint2D start, short centerX, short centerY, short radius,
+				ESearchType searchType, boolean needsPlayersGround, byte playerId) {
+			return dijkstra.find(start, centerX, centerY, (short) 0, radius, searchType, needsPlayersGround, playerId);
 		}
 
 		@Override
-		public Path searchInArea(IPathRequirements pathRequirements, ShortPoint2D start, short centerX, short centerY, short radius,
-				ESearchType searchType) {
-			ShortPoint2D target = inAreaFinder.find(pathRequirements, centerX, centerY, radius, searchType);
+		public Path searchInArea(ShortPoint2D start, short centerX, short centerY, short radius,
+				ESearchType searchType, boolean needsPlayersGround, byte playerId) {
+			ShortPoint2D target = inAreaFinder.find(centerX, centerY, radius, searchType, needsPlayersGround, playerId);
 			if (target != null) {
-				return calculatePathTo(pathRequirements, start, target);
+				return calculatePathTo(start, target, needsPlayersGround, playerId);
 			} else {
 				return null;
 			}
@@ -1218,8 +1217,8 @@ public final class MainGrid implements Serializable {
 		}
 
 		@Override
-		public boolean fitsSearchType(short x, short y, ESearchType searchType, IPathRequirements pathRequirements) {
-			return pathfinderGrid.fitsSearchType(x, y, searchType, pathRequirements);
+		public boolean fitsSearchType(short x, short y, ESearchType searchType, boolean needsPlayersGround, byte playerId) {
+			return pathfinderGrid.fitsSearchType(x, y, searchType, needsPlayersGround, playerId);
 		}
 
 		@Override
@@ -1301,13 +1300,13 @@ public final class MainGrid implements Serializable {
 		}
 
 		@Override
-		public boolean isValidPosition(IPathRequirements pathRequirements, ShortPoint2D position) {
-			return MainGrid.this.isValidPosition(pathRequirements, position.x, position.y);
+		public boolean isValidPosition(ShortPoint2D position, boolean needsPlayersGround, byte playerId) {
+			return MainGrid.this.isValidPosition(position.x, position.y, needsPlayersGround, playerId);
 		}
 
 		@Override
-		public boolean isValidNextPathPosition(IPathRequirements pathRequirements, ShortPoint2D nextPos, ShortPoint2D targetPos) {
-			return isValidPosition(pathRequirements, nextPos) && (!pathRequirements.needsPlayersGround()
+		public boolean isValidNextPathPosition(ShortPoint2D nextPos, ShortPoint2D targetPos, boolean needsPlayersGround, byte playerId) {
+			return isValidPosition(nextPos, needsPlayersGround, playerId) && (!needsPlayersGround
 					|| partitionsGrid.getPartitionAt(nextPos.x, nextPos.y) == partitionsGrid.getPartitionAt(targetPos.x, targetPos.y));
 		}
 	}
@@ -1563,8 +1562,8 @@ public final class MainGrid implements Serializable {
 		}
 
 		@Override
-		public boolean fitsSearchType(short x, short y, ESearchType searchType, IPathRequirements pathRequirements) {
-			return movablePathfinderGrid.fitsSearchType(x, y, searchType, pathRequirements);
+		public boolean fitsSearchType(short x, short y, ESearchType searchType, boolean needsPlayersGround, byte playerId) {
+			return movablePathfinderGrid.fitsSearchType(x, y, searchType, needsPlayersGround, playerId);
 		}
 
 		@Override

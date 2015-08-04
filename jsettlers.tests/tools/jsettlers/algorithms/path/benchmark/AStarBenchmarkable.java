@@ -9,11 +9,11 @@ import jsettlers.common.utils.Tuple;
 
 public class AStarBenchmarkable extends Benchmarkable {
 
-	private final IAStarPathMap<Object> map;
+	private final IAStarPathMap map;
 	private final short width;
 	private final short height;
 
-	private BucketQueueAStar<Object> aStar;
+	private BucketQueueAStar aStar;
 
 	public AStarBenchmarkable(HPAStarTestGrid grid) {
 		this.map = grid.getAStarMap();
@@ -23,12 +23,12 @@ public class AStarBenchmarkable extends Benchmarkable {
 
 	@Override
 	public void prepare() {
-		this.aStar = new BucketQueueAStar<Object>(map, width, height);
+		this.aStar = new BucketQueueAStar(map, width, height);
 	}
 
 	@Override
 	public void executeChallenge(Tuple<ShortPoint2D, ShortPoint2D> challenge) {
-		aStar.findPath(null, challenge.e1, challenge.e2);
+		aStar.findPath(challenge.e1, challenge.e2, false, (byte) -1);
 	}
 
 	@Override

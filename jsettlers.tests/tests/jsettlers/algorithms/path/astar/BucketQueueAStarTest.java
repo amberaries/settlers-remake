@@ -17,7 +17,6 @@ package jsettlers.algorithms.path.astar;
 import static org.junit.Assert.assertEquals;
 import jsettlers.algorithms.path.FullPath;
 import jsettlers.common.position.ShortPoint2D;
-import jsettlers.logic.map.grid.IPathRequirements;
 
 import org.junit.Test;
 
@@ -26,7 +25,7 @@ public class BucketQueueAStarTest {
 	private static final short WIDTH = 200;
 	private static final short HEIGHT = 200;
 
-	private final AbstractAStar<IPathRequirements> aStar = new BucketQueueAStar<>(new DummyEmptyAStarMap(WIDTH, HEIGHT), WIDTH, HEIGHT);
+	private final AbstractAStar aStar = new BucketQueueAStar(new DummyEmptyAStarMap(WIDTH, HEIGHT), WIDTH, HEIGHT);
 
 	@Test
 	public void testPathLengthSingle() {
@@ -58,7 +57,7 @@ public class BucketQueueAStarTest {
 	}
 
 	private FullPath findPath(short sx, short sy, short tx, short ty) {
-		return (FullPath) aStar.findPath(null, sx, sy, tx, ty);
+		return (FullPath) aStar.findPath(sx, sy, tx, ty, false, (byte) -1);
 	}
 
 }
