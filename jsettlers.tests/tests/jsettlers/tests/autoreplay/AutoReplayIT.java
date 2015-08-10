@@ -161,6 +161,7 @@ public class AutoReplayIT {
 
 			try {
 				compareMapFiles(expectedSavegamePath, newSavegame);
+				Files.delete(newSavegame);
 				System.out.println("New savegame is equal to old one => won't replace.");
 			} catch (AssertionError | NoSuchFileException ex) { // if the files are not equal, replace the existing one.
 				Files.move(newSavegame, expectedSavegamePath, StandardCopyOption.REPLACE_EXISTING);
