@@ -23,7 +23,6 @@ import jsettlers.algorithms.path.dijkstra.BucketQueue1ToNDijkstra;
 import jsettlers.algorithms.path.hpastar.graph.HPAStarAbstractedGrid;
 import jsettlers.algorithms.path.hpastar.graph.Vertex;
 import jsettlers.algorithms.path.hpastar.graph.generation.TransitionsCalculator.TransitionCalculatorFactory;
-import jsettlers.common.Color;
 import jsettlers.common.logging.MilliStopWatch;
 import jsettlers.common.position.ShortPoint2D;
 import jsettlers.common.utils.Tuple;
@@ -125,18 +124,18 @@ public class HPAStarAbstractedGridCalculator {
 		return cells;
 	}
 
-	private void printCell(HashMap<ShortPoint2D, Transition> transitions, int cellSize, int cellX, int cellY) {
-		grid.clearDebugColors();
-
-		for (Entry<ShortPoint2D, Transition> vertexEntry : transitions.entrySet()) {
-			Transition vertex = vertexEntry.getValue();
-			if (vertex.x / cellSize == cellX && vertex.y / cellSize == cellY) {
-				grid.setDebugColor(vertex.x, vertex.y, Color.ORANGE);
-				for (Transition neighbor : vertex.getNeighbors()) {
-					grid.setDebugColor(neighbor.x, neighbor.y, Color.CYAN);
-				}
-			}
-		}
-	}
+	// private void printCell(HashMap<ShortPoint2D, Transition> transitions, int cellSize, int cellX, int cellY) {
+	// grid.clearDebugColors();
+	//
+	// for (Entry<ShortPoint2D, Transition> vertexEntry : transitions.entrySet()) {
+	// Transition vertex = vertexEntry.getValue();
+	// if (vertex.x / cellSize == cellX && vertex.y / cellSize == cellY) {
+	// grid.setDebugColor(vertex.x, vertex.y, Color.ORANGE);
+	// for (Transition neighbor : vertex.getNeighbors()) {
+	// grid.setDebugColor(neighbor.x, neighbor.y, Color.CYAN);
+	// }
+	// }
+	// }
+	// }
 
 }

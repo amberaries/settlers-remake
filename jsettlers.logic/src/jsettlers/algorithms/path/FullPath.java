@@ -70,6 +70,28 @@ public final class FullPath extends Path {
 		insertAt(0, position.x, position.y);
 	}
 
+	public FullPath(ShortPoint2D... path) {
+		this(path.length);
+
+		for (int i = 0; i < path.length; i++) {
+			ShortPoint2D position = path[i];
+			insertAt(i, position.x, position.y);
+		}
+	}
+
+	public FullPath append(FullPath appendix) {
+		int thisRemainingLength = getRemainingSteps();
+		int appendixRemainingLength = appendix.getRemainingSteps();
+		FullPath newPath = new FullPath(thisRemainingLength + appendixRemainingLength);
+		System.arraycopy(this.pathX, idx + 1, newPath.pathX, 0, thisRemainingLength);
+		System.arraycopy(this.pathY, idx + 1, newPath.pathY, 0, thisRemainingLength);
+
+		System.arraycopy(appendix.pathX, appendix.idx + 1, newPath.pathX, thisRemainingLength, appendixRemainingLength);
+		System.arraycopy(appendix.pathY, appendix.idx + 1, newPath.pathY, thisRemainingLength, appendixRemainingLength);
+
+		return newPath;
+	}
+
 	/**
 	 * sets the given position to the given index of the path
 	 * 
@@ -111,25 +133,6 @@ public final class FullPath extends Path {
 	}
 
 	@Override
-	public String toString() {
-		StringBuffer res = new StringBuffer();
-		for (short idx = 0; idx < pathX.length; idx++) {
-			res.append("(" + pathX[idx] + "|" + pathY[idx] + ")");
-		}
-		return res.toString();
-	}
-
-	@Override
-	public short getFirstX() {
-		return pathX[0];
-	}
-
-	@Override
-	public short getFirstY() {
-		return pathY[0];
-	}
-
-	@Override
 	public short getTargetX() {
 		return pathX[pathX.length - 1];
 	}
@@ -141,6 +144,10 @@ public final class FullPath extends Path {
 
 	public int getLength() {
 		return pathX.length;
+	}
+
+	public int getRemainingSteps() {
+		return pathX.length - idx - 1;
 	}
 
 	/**
@@ -158,7 +165,7 @@ public final class FullPath extends Path {
 
 	@Override
 	public boolean hasOverNextStep() {
-		return idx + 2 < pathX.length;
+		return getRemainingSteps() >= 2;
 	}
 
 	@Override
@@ -169,5 +176,14 @@ public final class FullPath extends Path {
 	@Override
 	public Path prependPositions(ShortPoint2D... pathPrefix) {
 		return new FullPath(this, pathPrefix);
+	}
+
+	@Override
+	public String toString() {
+		StringBuffer res = new StringBuffer();
+		for (short idx = 0; idx < pathX.length; idx++) {
+			res.append("(" + pathX[idx] + "|" + pathY[idx] + ")");
+		}
+		return res.toString();
 	}
 }

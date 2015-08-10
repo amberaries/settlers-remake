@@ -32,12 +32,12 @@ public class HPAStarBenchmarkable extends Benchmarkable {
 				// new SparseTransitionsCalculatorFactory());
 				new SparseTransitionsCalculatorFactory());
 		HPAStarAbstractedGrid abstractedGrid = hpaStarGridCalculator.calculateAbstractedGrid(cellSize);
-		hpaStar = new HPAStar(abstractedGrid, grid, width, height);
+		hpaStar = new HPAStar(abstractedGrid, null, grid, width, height); // TODO supply aStar to HPAStar
 	}
 
 	@Override
 	public void executeChallenge(Tuple<ShortPoint2D, ShortPoint2D> challenge) {
-		hpaStar.findPath(challenge.e1.x, challenge.e1.y, challenge.e2.x, challenge.e2.y);
+		hpaStar.findPath(challenge.e1.x, challenge.e1.y, challenge.e2.x, challenge.e2.y, false, (byte) -1);
 	}
 
 	@Override

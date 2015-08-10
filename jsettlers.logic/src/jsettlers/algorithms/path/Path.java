@@ -57,13 +57,6 @@ public abstract class Path implements Serializable {
 
 	public abstract boolean isFinished();
 
-	@Override
-	public abstract String toString();
-
-	public abstract short getFirstX();
-
-	public abstract short getFirstY();
-
 	public abstract short getTargetX();
 
 	public abstract short getTargetY();
@@ -76,11 +69,10 @@ public abstract class Path implements Serializable {
 
 	public abstract ShortPoint2D getOverNextPos();
 
-	public final ShortPoint2D getFirstPos() {
-		return new ShortPoint2D(getFirstX(), getFirstY());
-	}
-
 	public final ShortPoint2D getTargetPos() {
 		return new ShortPoint2D(getTargetX(), getTargetY());
 	}
+
+	@Override
+	public abstract String toString();
 }

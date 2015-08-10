@@ -17,10 +17,12 @@ package jsettlers.algorithms.path.hpastar;
 import java.util.Random;
 
 import jsettlers.TestUtils;
+import jsettlers.algorithms.path.FullPath;
 import jsettlers.algorithms.path.astar.BucketQueueAStar;
 import jsettlers.algorithms.path.hpastar.graph.HPAStarAbstractedGrid;
 import jsettlers.algorithms.path.hpastar.graph.generation.HPAStarAbstractedGridCalculator;
 import jsettlers.algorithms.path.hpastar.graph.generation.SparseTransitionsCalculator.SparseTransitionsCalculatorFactory;
+import jsettlers.algorithms.path.hpastar.path.IFullPathFinder;
 import jsettlers.common.logging.MilliStopWatch;
 import jsettlers.common.map.MapLoadException;
 import jsettlers.common.position.ShortPoint2D;
@@ -59,7 +61,7 @@ public class HPAStarTesterWnd {
 
 		// calculate path
 		BucketQueueAStar aStar = new BucketQueueAStar(grid.getAStarMap(), grid.getWidth(), grid.getHeight());
-		HPAStar hpaStar = new HPAStar(abstractedGrid, grid, grid.getWidth(), grid.getHeight());
+		HPAStar hpaStar = new HPAStar(abstractedGrid, getFullPathFinder(aStar), grid, grid.getWidth(), grid.getHeight());
 		// hpaStar.findPath((short) 47, (short) 31, (short) 18, (short) 45);
 
 		grid.clearDebugColors();
@@ -79,6 +81,9 @@ public class HPAStarTesterWnd {
 
 		int seed = 1;
 		int paths = 1000;
+		boolean needsPlayersGround = false;
+		byte playerId = -1;
+
 		Random r = new Random(seed);
 		@SuppressWarnings("unchecked")
 		Tuple<ShortPoint2D, ShortPoint2D>[] pathChallanges = new Tuple[paths];
@@ -99,7 +104,7 @@ public class HPAStarTesterWnd {
 		{
 			MilliStopWatch watch = new MilliStopWatch();
 			for (Tuple<ShortPoint2D, ShortPoint2D> challange : pathChallanges) {
-				aStar.findPath(challange.e1.x, challange.e1.y, challange.e2.x, challange.e2.y, false, (byte) -1);
+				aStar.findPath(challange.e1.x, challange.e1.y, challange.e2.x, challange.e2.y, needsPlayersGround, playerId);
 			}
 			watch.stop("aStar: paths: " + paths + ", seed: " + seed + " needed");
 		}
@@ -107,9 +112,18 @@ public class HPAStarTesterWnd {
 		{
 			MilliStopWatch watch = new MilliStopWatch();
 			for (Tuple<ShortPoint2D, ShortPoint2D> challange : pathChallanges) {
-				hpaStar.findPath(challange.e1.x, challange.e1.y, challange.e2.x, challange.e2.y);
+				hpaStar.findPath(challange.e1.x, challange.e1.y, challange.e2.x, challange.e2.y, needsPlayersGround, playerId);
 			}
 			watch.stop("hpaStar: paths: " + paths + ", seed: " + seed + " needed");
 		}
+	}
+
+	private static IFullPathFinder getFullPathFinder(final BucketQueueAStar aStar) {
+		return new IFullPathFinder() {
+			@Override
+			public FullPath findPath(short sx, short sy, short tx, short ty, boolean needsPlayersGround, byte playerId) {
+				return aStar.findPath(sx, sy, tx, ty, needsPlayersGround, playerId);
+			}
+		};
 	}
 }

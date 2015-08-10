@@ -23,23 +23,28 @@ import jsettlers.algorithms.path.dijkstra.BucketQueue1ToNDijkstra;
 import jsettlers.algorithms.path.dijkstra.DijkstraGrid;
 import jsettlers.algorithms.path.hpastar.graph.HPAStarAbstractedGrid;
 import jsettlers.algorithms.path.hpastar.graph.Vertex;
+import jsettlers.algorithms.path.hpastar.path.HPAStarPath;
+import jsettlers.algorithms.path.hpastar.path.IFullPathFinder;
 import jsettlers.common.Color;
 import jsettlers.common.position.ShortPoint2D;
 
 public class HPAStar extends BucketQueue1ToNDijkstra {
 
 	private final HPAStarAbstractedGrid abstractedGrid;
+	private final IFullPathFinder pathFinder;
 
 	private final int[] depthParentHeap;
 
-	public HPAStar(HPAStarAbstractedGrid abstractedGrid, DijkstraGrid dijkstraGrid, short width, short height) {
+	public HPAStar(HPAStarAbstractedGrid abstractedGrid, IFullPathFinder pathFinder, DijkstraGrid dijkstraGrid, short width, short height) {
 		super(dijkstraGrid, width, height);
 		this.abstractedGrid = abstractedGrid;
+		this.pathFinder = pathFinder;
 		this.depthParentHeap = new int[width * height * 2];
 	}
 
-	public HPAStarPath findPath(short sx, short sy, short tx, short ty) {
+	public HPAStarPath findPath(short sx, short sy, short tx, short ty, boolean needsPlayersGround, byte playerId) {
 		map.clearDebugColors();
+		// TODO respect needsPlayersGround
 
 		boolean targetIsVertex = abstractedGrid.getVertex(new ShortPoint2D(tx, ty)) != null;
 
@@ -100,7 +105,7 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 			}
 		}
 
-		return createPath(tx, ty);
+		return createPath(tx, ty, needsPlayersGround, playerId);
 	}
 
 	private void initStartNodes(short sx, short sy, short tx, short ty) {
@@ -196,7 +201,7 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 		return 2 * flatIndex + 1;
 	}
 
-	private HPAStarPath createPath(short tx, short ty) {
+	private HPAStarPath createPath(short tx, short ty, boolean needsPlayersGround, byte playerId) {
 		int flatIndex = getFlatIdx(tx, ty);
 
 		if (!closedBitSet.get(flatIndex)) { // no path found
@@ -204,7 +209,7 @@ public class HPAStar extends BucketQueue1ToNDijkstra {
 		}
 
 		int length = depthParentHeap[getDepthIndex(flatIndex)] + 1;
-		HPAStarPath path = new HPAStarPath(length);
+		HPAStarPath path = new HPAStarPath(length, pathFinder, needsPlayersGround, playerId);
 
 		path.insertAbstractPosition(length - 1, tx, ty);
 

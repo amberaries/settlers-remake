@@ -18,7 +18,6 @@ import java.util.BitSet;
 
 import jsettlers.algorithms.path.FullPath;
 import jsettlers.algorithms.path.InvalidStartPositionException;
-import jsettlers.algorithms.path.Path;
 import jsettlers.algorithms.queues.bucket.AbstractMinBucketQueue;
 import jsettlers.algorithms.queues.bucket.ListMinBucketQueue;
 import jsettlers.common.movable.EDirection;
@@ -63,12 +62,12 @@ public final class BucketQueueAStar extends AbstractAStar {
 	}
 
 	@Override
-	public final Path findPath(ShortPoint2D start, ShortPoint2D target, boolean needsPlayersGround, byte playerId) {
+	public final FullPath findPath(ShortPoint2D start, ShortPoint2D target, boolean needsPlayersGround, byte playerId) {
 		return findPath(start.x, start.y, target.x, target.y, needsPlayersGround, playerId);
 	}
 
 	@Override
-	public final Path findPath(final short sx, final short sy, final short tx, final short ty, boolean needsPlayersGround, byte playerId) {
+	public final FullPath findPath(final short sx, final short sy, final short tx, final short ty, boolean needsPlayersGround, byte playerId) {
 		final boolean blockedAtStart;
 		if (!isInBounds(sx, sy)) {
 			throw new InvalidStartPositionException("Start position is out of bounds!", sx, sy);
