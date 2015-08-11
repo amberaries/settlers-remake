@@ -36,7 +36,7 @@ public class BucketQueueAStarTest {
 
 		FullPath path = findPath(sx, sy, tx, ty);
 
-		assertEquals(ShortPoint2D.getOnGridDist(tx - sx, ty - sy), path.getLength());
+		assertEquals(ShortPoint2D.getOnGridDist(tx - sx, ty - sy), path.getSteps());
 	}
 
 	@Test
@@ -49,7 +49,7 @@ public class BucketQueueAStarTest {
 							continue;
 						}
 
-						assertEquals(ShortPoint2D.getOnGridDist(tx - sx, ty - sy), findPath(sx, sy, tx, ty).getLength());
+						assertEquals(ShortPoint2D.getOnGridDist(tx - sx, ty - sy), findPath(sx, sy, tx, ty).getSteps());
 					}
 				}
 			}
