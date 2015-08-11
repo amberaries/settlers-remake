@@ -29,61 +29,39 @@ import jsettlers.common.position.ShortPoint2D;
 public final class FullPath extends Path {
 	private static final long serialVersionUID = 1869164120660594918L;
 
-	private transient short[] pathX;
-	private transient short[] pathY;
-
-	private transient int idx = -1;
+	private transient short[] path;
+	private transient int idx = -2;
 
 	private void writeObject(ObjectOutputStream oos) throws IOException {
-		short[] path = new short[pathX.length * 2];
-		for (int i = 0; i < pathX.length; i++) {
-			path[2 * i] = pathX[i];
-			path[2 * i + 1] = pathY[i];
-		}
 		oos.writeObject(path);
-		oos.writeInt(idx);
+		oos.writeInt(getStep()); // serialize the path's step
 	}
 
 	private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
-		short[] path = (short[]) ois.readObject();
-		idx = ois.readInt();
-
-		pathX = new short[path.length / 2];
-		pathY = new short[pathX.length];
-
-		for (int i = 0; i < pathX.length; i++) {
-			pathX[i] = path[2 * i];
-			pathY[i] = path[2 * i + 1];
-		}
+		path = (short[]) ois.readObject();
+		idx = 2 * ois.readInt();
 	}
 
 	public FullPath(int length) {
-		pathX = new short[length];
-		pathY = new short[length];
+		path = new short[2 * length];
 	}
 
 	/**
 	 * Concatenates a path and a prefix of {@link ShortPoint2D} objects.
 	 * 
-	 * @param oldPath
-	 *            The path to be appended to the prefix.
 	 * @param pathPrefix
 	 *            The path prefix. NOTE: The prefix must start with the current position of the movable!
+	 * @param oldPath
+	 *            The path to be appended to the prefix.
 	 */
-	public FullPath(FullPath oldPath, ShortPoint2D... pathPrefix) {
-		int length = (oldPath.getSteps() - (oldPath.getStep() + 1)) + pathPrefix.length;
-		pathX = new short[length];
-		pathY = new short[length];
+	private FullPath(ShortPoint2D[] pathPrefix, FullPath oldPath) {
+		this((oldPath.getSteps() - (oldPath.getStep() + 1)) + pathPrefix.length);
 
-		int i;
-		for (i = 0; i < pathPrefix.length; i++) {
+		for (int i = 0; i < pathPrefix.length; i++) {
 			insertAt(i, pathPrefix[i].x, pathPrefix[i].y);
 		}
 
-		for (; i < length; i++) {
-			insertAt(i, oldPath.nextX(), oldPath.nextY());
-			oldPath.goToNextStep();
-		}
+		System.arraycopy(oldPath.path, oldPath.idx + 2, this.path, 2 * pathPrefix.length, 2 * oldPath.getRemainingSteps());
 	}
 
 	public FullPath(ShortPoint2D... path) {
@@ -95,37 +73,35 @@ public final class FullPath extends Path {
 		}
 	}
 
-	public FullPath append(FullPath appendix) {
-		int thisRemainingLength = getRemainingSteps();
-		int appendixRemainingLength = appendix.getRemainingSteps();
-		FullPath newPath = new FullPath(thisRemainingLength + appendixRemainingLength);
-		System.arraycopy(this.pathX, idx + 1, newPath.pathX, 0, thisRemainingLength);
-		System.arraycopy(this.pathY, idx + 1, newPath.pathY, 0, thisRemainingLength);
-
-		System.arraycopy(appendix.pathX, appendix.idx + 1, newPath.pathX, thisRemainingLength, appendixRemainingLength);
-		System.arraycopy(appendix.pathY, appendix.idx + 1, newPath.pathY, thisRemainingLength, appendixRemainingLength);
-
-		return newPath;
-	}
-
 	@Override
 	public Path prependPositions(ShortPoint2D... pathPrefix) {
-		return new FullPath(this, pathPrefix);
+		return new FullPath(pathPrefix, this);
+	}
+
+	public FullPath append(FullPath appendix) {
+		int thisRemainingSteps = getRemainingSteps();
+		int appendixRemainingSteps = appendix.getRemainingSteps();
+		FullPath newPath = new FullPath(thisRemainingSteps + appendixRemainingSteps);
+
+		System.arraycopy(this.path, idx + 2, newPath.path, 0, 2 * thisRemainingSteps);
+		System.arraycopy(appendix.path, appendix.idx + 2, newPath.path, 2 * thisRemainingSteps, 2 * appendixRemainingSteps);
+
+		return newPath;
 	}
 
 	/**
 	 * sets the given position to the given index of the path
 	 * 
-	 * @param idx
+	 * @param index
 	 *            NOTE: this must be in the integer interval [0, pathlength -1]!
 	 * @param x
 	 *            x position of the step
 	 * @param y
 	 *            y position of the step
 	 */
-	public void insertAt(int idx, short x, short y) {
-		pathX[idx] = x;
-		pathY[idx] = y;
+	public void insertAt(int index, short x, short y) {
+		path[2 * index] = x;
+		path[2 * index + 1] = y;
 	}
 
 	@Override
@@ -135,12 +111,12 @@ public final class FullPath extends Path {
 
 	@Override
 	public short nextX() {
-		return pathX[idx + 1];
+		return path[idx + 2];
 	}
 
 	@Override
 	public short nextY() {
-		return pathY[idx + 1];
+		return path[idx + 3];
 	}
 
 	@Override
@@ -155,16 +131,16 @@ public final class FullPath extends Path {
 
 	@Override
 	public short getTargetX() {
-		return pathX[pathX.length - 1];
+		return path[path.length - 2];
 	}
 
 	@Override
 	public short getTargetY() {
-		return pathY[pathY.length - 1];
+		return path[path.length - 1];
 	}
 
 	public int getRemainingSteps() {
-		return pathX.length - idx - 1;
+		return getSteps() - getStep() - 1;
 	}
 
 	/**
@@ -172,16 +148,16 @@ public final class FullPath extends Path {
 	 */
 	@Override
 	public void goToNextStep() {
-		idx++;
+		idx += 2;
 	}
 
 	@Override
 	public int getStep() {
-		return idx;
+		return idx / 2;
 	}
 
 	public int getSteps() {
-		return pathX.length;
+		return path.length / 2;
 	}
 
 	@Override
@@ -191,14 +167,14 @@ public final class FullPath extends Path {
 
 	@Override
 	public ShortPoint2D getOverNextPos() {
-		return new ShortPoint2D(pathX[idx + 2], pathY[idx + 2]);
+		return new ShortPoint2D(path[idx + 4], path[idx + 5]);
 	}
 
 	@Override
 	public String toString() {
 		StringBuffer res = new StringBuffer();
-		for (short idx = 0; idx < pathX.length; idx++) {
-			res.append("(" + pathX[idx] + "|" + pathY[idx] + ")");
+		for (short idx = 0; idx < path.length; idx += 2) {
+			res.append("(" + path[idx] + "|" + path[idx + 1] + ")");
 		}
 		return res.toString();
 	}
